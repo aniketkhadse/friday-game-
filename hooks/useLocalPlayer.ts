@@ -2,34 +2,27 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Player, PlayerStatus } from "@/utils/game";
-
-const PLAYER_ID_KEY = "fun-friday-player-id";
+import {
+  getLocalPlayerId,
+  joinPlayer,
+  setPlayerReady,
+  updatePlayer,
+} from "@/store/firestore-game";
 
 export function useLocalPlayer() {
   const [player, setPlayer] = useState<Player | null>(null);
 
   useEffect(() => {
-    const raw = window.localStorage.getItem(PLAYER_ID_KEY);
+    const raw = getLocalPlayerId();
     if (raw) {
       setPlayer((current) => current ?? ({ id: raw } as Player));
     }
   }, []);
 
   const join = useCallback(async (name: string) => {
-    const response = await fetch("/api/player", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, status: "Waiting" }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Unable to join game");
-    }
-
-    const data = (await response.json()) as { player: Player };
-    window.localStorage.setItem(PLAYER_ID_KEY, data.player.id);
-    setPlayer(data.player);
-    return data.player;
+    const nextPlayer = await joinPlayer(name);
+    setPlayer(nextPlayer);
+    return nextPlayer;
   }, []);
 
   const syncPlayer = useCallback(
@@ -39,25 +32,22 @@ export function useLocalPlayer() {
       wpm?: number;
       accuracy?: number;
       score?: number;
+      level1Score?: number;
       level2Progress?: number;
       level2Score?: number;
       level2Correct?: number;
     }) => {
       if (!player?.id) return null;
-
-      const response = await fetch("/api/player", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: player.id, name: player.name, ...payload }),
-      });
-
-      if (!response.ok) return null;
-      const data = (await response.json()) as { player: Player };
-      setPlayer(data.player);
-      return data.player;
+      await updatePlayer(player.id, payload);
+      return null;
     },
-    [player?.id, player?.name],
+    [player?.id],
   );
 
-  return { player, setPlayer, join, syncPlayer };
+  const ready = useCallback(async () => {
+    if (!player?.id) return;
+    await setPlayerReady(player.id);
+  }, [player?.id]);
+
+  return { player, setPlayer, join, syncPlayer, ready };
 }

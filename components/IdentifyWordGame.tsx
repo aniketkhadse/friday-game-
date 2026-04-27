@@ -88,7 +88,7 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
       if (wasCorrect) correctRef.current += 1;
 
       setReveal(wasCorrect ? null : { answer: question.answer, wasCorrect });
-      advance(wasCorrect ? 250 : 2500);
+      advance(wasCorrect ? 0 : 2500);
     },
     [advance, question.answer],
   );

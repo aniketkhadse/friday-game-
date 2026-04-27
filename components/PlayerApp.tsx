@@ -4,7 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { BrandHeader } from "@/components/BrandHeader";
 import { IdentifyWordGame } from "@/components/IdentifyWordGame";
 import { TypingRace } from "@/components/TypingRace";
-import { useGamePolling } from "@/hooks/useGamePolling";
+import { useGameRealtime } from "@/hooks/useGameRealtime";
 import { useLocalPlayer } from "@/hooks/useLocalPlayer";
 import { COUNTDOWN_SECONDS, TypingMetrics } from "@/utils/game";
 
@@ -20,8 +20,8 @@ type PlayerStep =
   | "notQualified";
 
 export function PlayerApp() {
-  const { snapshot } = useGamePolling(850);
-  const { player, setPlayer, join, syncPlayer } = useLocalPlayer();
+  const { snapshot, error: syncError } = useGameRealtime();
+  const { player, setPlayer, join, syncPlayer, ready } = useLocalPlayer();
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [step, setStep] = useState<PlayerStep>("landing");
@@ -37,13 +37,13 @@ export function PlayerApp() {
   useEffect(() => {
     if (!player?.id || !snapshot) return;
 
-    if (snapshot.gameState === "LEVEL2_STARTED") {
-      if (player.level2Eligible && player.status !== "Finished") {
+    if (snapshot.gameState === "LEVEL2_RUNNING") {
+      if (player.qualified && player.status !== "Finished") {
         setStep("level2");
         return;
       }
 
-      if (player.level2Eligible && player.status === "Finished") {
+      if (player.qualified && player.status === "Finished") {
         setStep("level2Result");
         return;
       }
@@ -52,28 +52,32 @@ export function PlayerApp() {
       return;
     }
 
-    if (snapshot.gameState === "LEVEL2_ENDED") {
-      setStep(player.level2Eligible ? "level2Result" : "notQualified");
+    if (snapshot.gameState === "ENDED") {
+      setStep(player.qualified ? "level2Result" : "notQualified");
       return;
     }
 
-    if (snapshot.gameState === "COUNTDOWN" && snapshot.countdownEndsAt) {
+    if (
+      snapshot.gameState === "LEVEL1_RUNNING" &&
+      snapshot.countdownEndsAt &&
+      Date.now() < snapshot.countdownEndsAt
+    ) {
       setStep("countdown");
       const secondsLeft = Math.max(1, Math.ceil((snapshot.countdownEndsAt - snapshot.serverNow) / 1000));
       setCountdownValue(secondsLeft);
       return;
     }
 
-    if (snapshot.gameState === "STARTED" && player.status !== "Finished") {
+    if (snapshot.gameState === "LEVEL1_RUNNING" && player.status !== "Finished") {
       setStep("game");
       void syncPlayer({ status: "Playing" });
       return;
     }
 
-    if (snapshot.gameState === "ENDED" || player.status === "Finished") {
+    if (snapshot.gameState === "LEVEL1_DONE" || player.status === "Finished") {
       setStep("result");
     }
-  }, [player?.id, player?.status, snapshot, syncPlayer]);
+  }, [player?.id, player?.qualified, player?.status, snapshot, syncPlayer]);
 
   useEffect(() => {
     if (step !== "countdown" || !snapshot?.countdownEndsAt) return;
@@ -103,7 +107,7 @@ export function PlayerApp() {
   };
 
   const handleReady = async () => {
-    await syncPlayer({ status: "Ready" });
+    await ready();
     setStep("waiting");
   };
 
@@ -111,7 +115,7 @@ export function PlayerApp() {
     (metrics: TypingMetrics) => {
       setFinalMetrics(metrics);
       setStep("result");
-      void syncPlayer({ ...metrics, status: "Finished" });
+      void syncPlayer({ ...metrics, level1Score: metrics.score, status: "Finished" });
     },
     [syncPlayer],
   );
@@ -155,6 +159,11 @@ export function PlayerApp() {
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-5xl">
         <BrandHeader />
+        {syncError ? (
+          <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+            {syncError}
+          </div>
+        ) : null}
 
         {step === "landing" ? (
           <Panel>
@@ -261,7 +270,7 @@ export function PlayerApp() {
             <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Level 2</p>
             <h2 className="mt-2 text-2xl font-bold text-slate-950">Thanks for playing Level 1</h2>
             <p className="mx-auto mt-3 max-w-xl text-slate-600">
-              Level 2 is available only for the top 30% players from the typing race.
+              Level 2 is available only for the players selected by the admin after the typing race.
             </p>
           </Panel>
         ) : null}

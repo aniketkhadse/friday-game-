@@ -64,13 +64,10 @@ export const LEVEL_2_QUESTIONS = [
 
 export type GameState =
   | "WAITING"
-  | "INSTRUCTIONS"
-  | "READY"
-  | "COUNTDOWN"
-  | "STARTED"
-  | "ENDED"
-  | "LEVEL2_STARTED"
-  | "LEVEL2_ENDED";
+  | "LEVEL1_RUNNING"
+  | "LEVEL1_DONE"
+  | "LEVEL2_RUNNING"
+  | "ENDED";
 
 export type PlayerStatus = "Waiting" | "Ready" | "Playing" | "Finished";
 
@@ -84,6 +81,8 @@ export type Player = {
   wpm: number;
   accuracy: number;
   score: number;
+  level1Score: number;
+  qualified: boolean;
   level2Eligible: boolean;
   level2Progress: number;
   level2Score: number;
@@ -95,6 +94,7 @@ export type GameSnapshot = {
   countdownEndsAt: number | null;
   roundEndsAt: number | null;
   advancementPercent: number;
+  selectedCount: number | null;
   serverNow: number;
   players: Player[];
 };
@@ -159,16 +159,23 @@ export function getPlayerStatusCounts(players: Player[]) {
 
 export function sortLeaderboard(players: Player[]) {
   return [...players].sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
+    const aScore = a.level1Score || a.score;
+    const bScore = b.level1Score || b.score;
+    if (bScore !== aScore) return bScore - aScore;
     if (b.wpm !== a.wpm) return b.wpm - a.wpm;
     return b.accuracy - a.accuracy;
   });
 }
 
 export function getTopLevel1Players(players: Player[], topPercent = DEFAULT_ADVANCEMENT_PERCENT) {
-  const ranked = sortLeaderboard(players).filter((player) => player.score > 0);
+  const ranked = sortLeaderboard(players).filter((player) => (player.level1Score || player.score) > 0);
   const topCount = Math.max(1, Math.ceil(ranked.length * (topPercent / 100)));
   return ranked.slice(0, topCount);
+}
+
+export function getTopLevel1PlayersByCount(players: Player[], count: number) {
+  const ranked = sortLeaderboard(players).filter((player) => (player.level1Score || player.score) > 0);
+  return ranked.slice(0, Math.max(0, Math.min(count, ranked.length)));
 }
 
 export function isLevel2AnswerCorrect(answer: string, input: string) {
