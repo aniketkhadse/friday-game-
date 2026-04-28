@@ -371,6 +371,7 @@ function FinalWinners({
   selectionValue,
   onSelectionMode,
   onSelectionValue,
+  onSaveSelection,
 }: {
   players: Player[];
   selectedPlayers: Player[];
