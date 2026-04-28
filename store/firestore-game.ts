@@ -4,11 +4,14 @@ import {
   collection,
   doc,
   getDocs,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
   runTransaction,
   setDoc,
+  where,
+  limit,
   writeBatch,
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "@/lib/firebase";
@@ -128,11 +131,28 @@ export function subscribeGameSnapshot(callback: (snapshot: GameSnapshot) => void
 export async function joinPlayer(name: string) {
   assertDb();
   await ensureGameDocument();
-  const id = crypto.randomUUID();
+  const email = name.trim().toLowerCase();
+  const existingId = getLocalPlayerId();
+  if (existingId) {
+    const existing = await getDoc(doc(db!, "players", existingId));
+    if (existing.exists()) {
+      return normalizePlayer(existing.id, existing.data());
+    }
+  }
+
+  const existingByEmail = await getDocs(query(collection(db!, "players"), where("email", "==", email), limit(1)));
+  if (!existingByEmail.empty) {
+    const existingDoc = existingByEmail.docs[0];
+    saveLocalPlayerId(existingDoc.id);
+    return normalizePlayer(existingDoc.id, existingDoc.data());
+  }
+
+  const id = existingId || crypto.randomUUID();
   const now = Date.now();
   const player: Player = {
     id,
-    name: name.trim(),
+    name: email,
+    email,
     status: "Waiting",
     joinedAt: now,
     updatedAt: now,
@@ -148,7 +168,7 @@ export async function joinPlayer(name: string) {
     level2Correct: 0,
   };
 
-  await setDoc(doc(db!, "players", id), player);
+  await setDoc(doc(db!, "players", id), player, { merge: false });
   saveLocalPlayerId(id);
   return player;
 }
@@ -325,6 +345,7 @@ function normalizePlayer(id: string, data: Record<string, unknown>): Player {
   return {
     id,
     name: stringValue(data.name, "Player"),
+    email: stringValue(data.email, stringValue(data.name, "player@aristasystems.in")),
     status: statusValue(data.status),
     joinedAt: numberValue(data.joinedAt, Date.now()),
     updatedAt: numberValue(data.updatedAt, Date.now()),

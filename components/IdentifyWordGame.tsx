@@ -34,6 +34,7 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
   const questionStartedAt = useRef(Date.now());
   const locked = useRef(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  void onProgress;
 
   const question = LEVEL_2_QUESTIONS[questionIndex];
   const progress = useMemo(
@@ -41,24 +42,15 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
     [questionIndex],
   );
 
-  const publishProgress = useCallback(
-    (nextIndex: number) => {
-      const result = {
-        level2Score: scoreRef.current,
-        level2Correct: correctRef.current,
-        level2Progress: Math.round((nextIndex / LEVEL_2_QUESTIONS.length) * 100),
-      };
-      onProgress(result);
-      return result;
-    },
-    [onProgress],
-  );
-
   const advance = useCallback(
     (delayMs: number) => {
       window.setTimeout(() => {
         const nextIndex = questionIndex + 1;
-        const result = publishProgress(nextIndex);
+        const result = {
+          level2Score: scoreRef.current,
+          level2Correct: correctRef.current,
+          level2Progress: Math.round((nextIndex / LEVEL_2_QUESTIONS.length) * 100),
+        };
 
         if (nextIndex >= LEVEL_2_QUESTIONS.length) {
           onFinish({ ...result, level2Progress: 100 });
@@ -74,7 +66,7 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
         requestAnimationFrame(() => inputRef.current?.focus());
       }, delayMs);
     },
-    [onFinish, publishProgress, questionIndex],
+    [onFinish, questionIndex],
   );
 
   const finishQuestion = useCallback(

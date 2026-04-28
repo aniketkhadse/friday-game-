@@ -91,6 +91,7 @@ export function upsertPlayer(input: {
   const player: Player = {
     id,
     name: input.name.trim(),
+    email: input.name.trim().toLowerCase(),
     status: input.status ?? current?.status ?? "Waiting",
     joinedAt: current?.joinedAt ?? now,
     updatedAt: now,

@@ -6,7 +6,13 @@ import { IdentifyWordGame } from "@/components/IdentifyWordGame";
 import { TypingRace } from "@/components/TypingRace";
 import { useGameRealtime } from "@/hooks/useGameRealtime";
 import { useLocalPlayer } from "@/hooks/useLocalPlayer";
-import { COUNTDOWN_SECONDS, TypingMetrics } from "@/utils/game";
+import {
+  COUNTDOWN_SECONDS,
+  isValidAristaUsername,
+  normalizeEmailInput,
+  sortLevel2Leaderboard,
+  TypingMetrics,
+} from "@/utils/game";
 
 type PlayerStep =
   | "landing"
@@ -22,12 +28,13 @@ type PlayerStep =
 export function PlayerApp() {
   const { snapshot, error: syncError } = useGameRealtime();
   const { player, setPlayer, join, syncPlayer, ready, clearPlayer } = useLocalPlayer();
-  const [name, setName] = useState("");
+  const [emailName, setEmailName] = useState("");
   const [error, setError] = useState("");
   const [isJoining, setIsJoining] = useState(false);
   const [step, setStep] = useState<PlayerStep>("landing");
   const [finalMetrics, setFinalMetrics] = useState<TypingMetrics | null>(null);
   const [countdownValue, setCountdownValue] = useState(COUNTDOWN_SECONDS);
+  const gameCanJoin = !snapshot || snapshot.gameState === "WAITING";
 
   useEffect(() => {
     if (!player?.id || !snapshot) return;
@@ -37,10 +44,12 @@ export function PlayerApp() {
       return;
     }
 
-    if (!player.name) {
+    const timer = window.setTimeout(() => {
       clearPlayer();
       setStep("landing");
-    }
+    }, 800);
+
+    return () => window.clearTimeout(timer);
   }, [clearPlayer, player?.id, player?.name, setPlayer, snapshot]);
 
   useEffect(() => {
@@ -108,9 +117,15 @@ export function PlayerApp() {
 
   const handleJoin = async (event: FormEvent) => {
     event.preventDefault();
-    const cleanName = name.trim();
-    if (!cleanName) {
-      setError("Please enter your name to join.");
+    const cleanName = emailName.trim().toLowerCase();
+
+    if (!gameCanJoin) {
+      setError("Game already started. Please wait for next round.");
+      return;
+    }
+
+    if (!isValidAristaUsername(cleanName)) {
+      setError("Enter a valid Arista email username.");
       return;
     }
 
@@ -118,7 +133,7 @@ export function PlayerApp() {
     setIsJoining(true);
 
     try {
-      await join(cleanName);
+      await join(normalizeEmailInput(cleanName));
       setStep("instructions");
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Unable to join game. Please try again.";
@@ -143,10 +158,8 @@ export function PlayerApp() {
   );
 
   const handleProgress = useCallback(
-    (metrics: TypingMetrics) => {
-      void syncPlayer({ ...metrics, status: "Playing" });
-    },
-    [syncPlayer],
+    (_metrics: TypingMetrics) => undefined,
+    [],
   );
 
   const resultMetrics = useMemo(
@@ -180,10 +193,22 @@ export function PlayerApp() {
   const handleJoinAgain = useCallback(() => {
     clearPlayer();
     setFinalMetrics(null);
-    setName("");
+    setEmailName("");
     setError("");
     setStep("landing");
   }, [clearPlayer]);
+
+  const selectedPlayers = useMemo(
+    () => snapshot?.players.filter((candidate) => candidate.qualified) ?? [],
+    [snapshot?.players],
+  );
+  const hasLevel1Selection = selectedPlayers.length > 0;
+  const finalRank = useMemo(() => {
+    if (!player?.id || !snapshot) return null;
+    const ranked = sortLevel2Leaderboard(snapshot.players);
+    const index = ranked.findIndex((candidate) => candidate.id === player.id);
+    return index >= 0 ? index + 1 : null;
+  }, [player?.id, snapshot]);
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
@@ -199,19 +224,31 @@ export function PlayerApp() {
           <Panel>
             <form onSubmit={handleJoin} className="mx-auto max-w-md">
               <label className="block text-sm font-semibold text-slate-700" htmlFor="name">
-                Enter Your Name
+                Enter Arista Email
               </label>
-              <input
-                id="name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 text-slate-950 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                maxLength={60}
-              />
+              <div className="mt-2 flex h-12 overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm focus-within:border-slate-900 focus-within:ring-4 focus-within:ring-slate-200">
+                <input
+                  id="name"
+                  value={emailName}
+                  onChange={(event) => setEmailName(event.target.value)}
+                  className="min-w-0 flex-1 px-4 text-slate-950 outline-none"
+                  maxLength={48}
+                  placeholder="aniket"
+                  disabled={!gameCanJoin || isJoining}
+                />
+                <span className="flex items-center border-l border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-500">
+                  @aristasystems.in
+                </span>
+              </div>
+              {!gameCanJoin ? (
+                <p className="mt-3 text-sm font-semibold text-amber-700">
+                  Game already started. Please wait for next round.
+                </p>
+              ) : null}
               {error ? <p className="mt-3 text-sm font-medium text-rose-600">{error}</p> : null}
               <button
                 className="mt-5 h-12 w-full rounded-lg bg-slate-950 px-5 font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isJoining}
+                disabled={isJoining || !gameCanJoin}
                 type="submit"
               >
                 {isJoining ? "Joining..." : "Join Game"}
@@ -273,12 +310,21 @@ export function PlayerApp() {
         {step === "result" ? (
           <Panel>
             <h2 className="text-2xl font-bold text-slate-950">Result</h2>
-            <p className="mt-2 text-slate-600">{player?.name ?? name}</p>
+            <p className="mt-2 text-slate-600">{player?.email ?? player?.name ?? normalizeEmailInput(emailName)}</p>
             <div className="mt-6 grid gap-4 sm:grid-cols-3">
               <Result label="WPM" value={resultMetrics.wpm.toFixed(1)} />
               <Result label="Accuracy" value={`${resultMetrics.accuracy.toFixed(1)}%`} />
               <Result label="Final Score" value={resultMetrics.score.toFixed(1)} />
             </div>
+            {snapshot?.gameState === "LEVEL1_DONE" ? (
+              <p className={`mt-5 text-lg font-black ${player?.qualified ? "text-emerald-700" : "text-slate-600"}`}>
+                {player?.qualified
+                  ? "You are selected for Level 2"
+                  : hasLevel1Selection
+                    ? "Better luck next time"
+                    : "Results are being finalized"}
+              </p>
+            ) : null}
             <button
               onClick={handleJoinAgain}
               className="mt-6 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
@@ -296,12 +342,17 @@ export function PlayerApp() {
           <Panel>
             <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Level 2 Complete</p>
             <h2 className="mt-2 text-2xl font-bold text-slate-950">Identify the Word Result</h2>
-            <p className="mt-2 text-slate-600">{player?.name ?? name}</p>
+            <p className="mt-2 text-slate-600">{player?.email ?? player?.name ?? normalizeEmailInput(emailName)}</p>
             <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              <Result label="Rank" value={finalRank ? `#${finalRank}` : "-"} />
               <Result label="Correct" value={`${player?.level2Correct ?? 0}/10`} />
-              <Result label="Progress" value={`${player?.level2Progress ?? 0}%`} />
               <Result label="Level 2 Score" value={`${player?.level2Score ?? 0}`} />
             </div>
+            {snapshot?.gameState === "ENDED" ? (
+              <p className="mt-5 text-lg font-black text-emerald-700">
+                You are selected for offline final round
+              </p>
+            ) : null}
             <button
               onClick={handleJoinAgain}
               className="mt-6 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"

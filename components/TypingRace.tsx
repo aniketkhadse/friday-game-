@@ -19,8 +19,8 @@ export function TypingRace({ roundEndsAt, onFinish, onProgress }: TypingRaceProp
   const [remaining, setRemaining] = useState(ROUND_SECONDS);
   const startedAt = useRef(Date.now());
   const finished = useRef(false);
-  const lastSync = useRef(0);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  void onProgress;
 
   const metrics = useMemo(
     () => calculateTypingMetrics(CHALLENGE_PARAGRAPH, typed, (Date.now() - startedAt.current) / 1000),
@@ -54,14 +54,6 @@ export function TypingRace({ roundEndsAt, onFinish, onProgress }: TypingRaceProp
 
     return () => window.clearInterval(timer);
   }, [finish, roundEndsAt, typed]);
-
-  useEffect(() => {
-    const now = Date.now();
-    if (now - lastSync.current > 900 || metrics.progress >= 100) {
-      lastSync.current = now;
-      onProgress(metrics);
-    }
-  }, [metrics, onProgress]);
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {

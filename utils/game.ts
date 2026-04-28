@@ -1,13 +1,14 @@
 export const GAME_TITLE = "Fun Friday Challenge 🎯";
 export const GAME_SUBTITLE = "By Technology & Development Team";
-export const ROUND_SECONDS = 30;
+export const ROUND_SECONDS = 60;
 export const COUNTDOWN_SECONDS = 5;
 
 export const CHALLENGE_PARAGRAPH =
-  "Precision under pressure reveals disciplined engineering habits: resilient teams communicate clearly, measure trade-offs quickly, and transform complex problems into reliable products without losing focus on the people who use them every day.";
+  "The quick brown fox jumps over the lazy dog while typing complex keyboard sequences efficiently improves accuracy and speed in real world development scenarios.";
 
 export const DEFAULT_ADVANCEMENT_PERCENT = 30;
-export const LEVEL_2_SECONDS_PER_QUESTION = 10;
+export const LEVEL_2_SECONDS_PER_QUESTION = 20;
+export const EMAIL_DOMAIN = "@aristasystems.in";
 
 export const LEVEL_2_QUESTIONS = [
   {
@@ -74,6 +75,7 @@ export type PlayerStatus = "Waiting" | "Ready" | "Playing" | "Finished";
 export type Player = {
   id: string;
   name: string;
+  email: string;
   status: PlayerStatus;
   joinedAt: number;
   updatedAt: number;
@@ -135,7 +137,7 @@ export function calculateTypingMetrics(
   const totalTypedChars = typed.length;
   const wpm = (correctChars / 5 / (safeElapsed / 60));
   const accuracy = totalTypedChars === 0 ? 100 : (correctChars / totalTypedChars) * 100;
-  const score = wpm * 0.7 + accuracy * 0.3;
+  const score = wpm * 0.6 + accuracy * 0.4;
   const progress = (correctChars / target.length) * 100;
 
   return {
@@ -201,4 +203,14 @@ export function getTopLevel2Players(players: Player[], topPercent = DEFAULT_ADVA
   const ranked = sortLevel2Leaderboard(players).filter((player) => player.level2Score > 0);
   const topCount = Math.max(1, Math.ceil(ranked.length * (topPercent / 100)));
   return ranked.slice(0, topCount);
+}
+
+export function normalizeEmailInput(input: string) {
+  const username = input.trim().toLowerCase().replace(EMAIL_DOMAIN, "");
+  return `${username}${EMAIL_DOMAIN}`;
+}
+
+export function isValidAristaUsername(input: string) {
+  const username = input.trim().toLowerCase().replace(EMAIL_DOMAIN, "");
+  return /^[a-z0-9._-]+$/.test(username) && username.length >= 2;
 }

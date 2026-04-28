@@ -58,6 +58,25 @@ export function AdminPanel() {
     await startLevel2();
   }
 
+  async function handleEndLevel1() {
+    await endLevel1();
+    await selectLevel2Players({ mode: selectionMode, value: selectionValue });
+  }
+
+  function handleSelectionMode(mode: AdvancementMode) {
+    setSelectionMode(mode);
+    if (gameState === "LEVEL1_DONE") {
+      void runAction(() => selectLevel2Players({ mode, value: selectionValue }));
+    }
+  }
+
+  function handleSelectionValue(value: number) {
+    setSelectionValue(value);
+    if (gameState === "LEVEL1_DONE") {
+      void runAction(() => selectLevel2Players({ mode: selectionMode, value }));
+    }
+  }
+
   return (
     <main className="min-h-screen px-4 py-8">
       <div className="mx-auto max-w-7xl">
@@ -77,10 +96,10 @@ export function AdminPanel() {
               isActing={isActing}
               selectionMode={selectionMode}
               selectionValue={selectionValue}
-              onSelectionMode={setSelectionMode}
-              onSelectionValue={setSelectionValue}
+              onSelectionMode={handleSelectionMode}
+              onSelectionValue={handleSelectionValue}
               onStartLevel1={() => void runAction(startLevel1)}
-              onEndLevel1={() => void runAction(endLevel1)}
+              onEndLevel1={() => void runAction(handleEndLevel1)}
               onStartLevel2={() => void runAction(handleStartLevel2)}
               onEndLevel2={() => void runAction(endLevel2)}
               onReset={() => void runAction(resetGame)}
