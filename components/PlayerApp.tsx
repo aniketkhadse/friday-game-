@@ -417,10 +417,10 @@ export function PlayerApp() {
             </div>
             {selectedForOfflineFinal ? (
               <p className="mt-8 text-4xl font-black text-emerald-700">
-                🎉 YOU ARE SELECTED FOR OFFLINE FINAL 🎉
+                🎉 YOU ARE SELECTED FOR LEVEL 3 OFFLINE 🎉
               </p>
             ) : snapshot?.gameState === "ENDED" ? (
-              <p className="mt-8 text-2xl font-bold text-slate-600">Thank you for playing</p>
+              <p className="mt-8 text-3xl font-black text-rose-700">You are not selected for Level 3 offline</p>
             ) : null}
             <button
               onClick={handleJoinAgain}

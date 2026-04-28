@@ -18,6 +18,7 @@ import {
   getPlayerStatusCounts,
   getTopLevel1Players,
   getTopLevel1PlayersByCount,
+  getTopLevel2Players,
   GameState,
   Player,
   sortLevel2Leaderboard,
@@ -43,6 +44,10 @@ export function AdminPanel() {
       : getTopLevel1Players(players, selectionValue);
   }, [players, selectionMode, selectionValue]);
   const finalWinners = useMemo(() => sortLevel2Leaderboard(players), [players]);
+  const selectedForLevel3 = useMemo(
+    () => getTopLevel2Players(players, selectionMode === "percent" ? selectionValue : 30),
+    [players, selectionMode, selectionValue],
+  );
 
   async function runAction(action: () => Promise<void>) {
     setIsActing(true);
@@ -115,7 +120,7 @@ export function AdminPanel() {
         </section>
 
         {gameState === "ENDED" ? (
-          <FinalWinners players={finalWinners} />
+          <FinalWinners players={finalWinners} selectedPlayers={selectedForLevel3} />
         ) : (
           <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.15fr]">
             <PlayerMonitor players={players} />
@@ -334,15 +339,42 @@ function Level2Leaderboard({ players }: { players: Player[] }) {
   );
 }
 
-function FinalWinners({ players }: { players: Player[] }) {
+function FinalWinners({
+  players,
+  selectedPlayers,
+}: {
+  players: Player[];
+  selectedPlayers: Player[];
+}) {
   return (
-    <section className="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-6 py-5">
-        <h2 className="text-2xl font-black text-slate-950">Final Winners 🏆</h2>
-        <p className="mt-1 text-slate-600">These winners will proceed to offline final round</p>
-      </div>
-      <LeaderboardTable players={players} scoreKey="level2" empty="No Level 2 scores yet." />
-    </section>
+    <div className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+      <section className="rounded-lg border border-emerald-200 bg-white p-6 shadow-sm">
+        <h2 className="text-2xl font-black text-slate-950">Selected for Level 3 Offline 🎉</h2>
+        <p className="mt-1 text-slate-600">These players will proceed to offline final round.</p>
+        <div className="mt-5 space-y-2">
+          {selectedPlayers.map((player, index) => (
+            <div className="flex items-center justify-between rounded-lg bg-emerald-50 px-4 py-3" key={player.id}>
+              <div className="flex items-center gap-3">
+                <span className="w-12 font-black text-emerald-800">#{index + 1}</span>
+                <span className="font-bold text-slate-900">{player.name}</span>
+              </div>
+              <span className="font-black text-slate-950">{player.level2Score.toFixed(0)}</span>
+            </div>
+          ))}
+          {selectedPlayers.length === 0 ? (
+            <p className="text-sm text-slate-500">No finalists selected yet.</p>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 px-6 py-5">
+          <h2 className="text-2xl font-black text-slate-950">Final Winners 🏆</h2>
+          <p className="mt-1 text-slate-600">Complete Guess the Word leaderboard</p>
+        </div>
+        <LeaderboardTable players={players} scoreKey="level2" empty="No Level 2 scores yet." />
+      </section>
+    </div>
   );
 }
 
