@@ -55,6 +55,10 @@ export function saveLocalPlayerId(id: string) {
   window.localStorage.setItem(PLAYER_ID_KEY, id);
 }
 
+export function clearLocalPlayerId() {
+  window.localStorage.removeItem(PLAYER_ID_KEY);
+}
+
 export function subscribeGameSnapshot(callback: (snapshot: GameSnapshot) => void, onError: (message: string) => void) {
   if (!db || !isFirebaseConfigured) {
     onError("Firebase is not configured. Add NEXT_PUBLIC_FIREBASE_* values.");
@@ -64,8 +68,12 @@ export function subscribeGameSnapshot(callback: (snapshot: GameSnapshot) => void
 
   let gameDoc = defaultGameDoc;
   let players: Player[] = [];
+  let gameLoaded = false;
+  let playersLoaded = false;
 
   const emit = () => {
+    if (!gameLoaded || !playersLoaded) return;
+
     callback({
       gameState: gameDoc.gameState,
       countdownEndsAt: gameDoc.countdownEndsAt,
@@ -81,6 +89,7 @@ export function subscribeGameSnapshot(callback: (snapshot: GameSnapshot) => void
     doc(db, "games", GAME_DOC),
     (snapshot) => {
       if (!snapshot.exists()) {
+        gameLoaded = true;
         void ensureGameDocument();
         emit();
         return;
@@ -94,6 +103,7 @@ export function subscribeGameSnapshot(callback: (snapshot: GameSnapshot) => void
         advancementPercent: data.advancementPercent ?? DEFAULT_ADVANCEMENT_PERCENT,
         selectedCount: data.selectedCount ?? null,
       };
+      gameLoaded = true;
       emit();
     },
     (error) => onError(error.message),
@@ -103,6 +113,7 @@ export function subscribeGameSnapshot(callback: (snapshot: GameSnapshot) => void
     query(collection(db, "players"), orderBy("joinedAt", "asc")),
     (snapshot) => {
       players = snapshot.docs.map((playerDoc) => normalizePlayer(playerDoc.id, playerDoc.data()));
+      playersLoaded = true;
       emit();
     },
     (error) => onError(error.message),
@@ -149,10 +160,14 @@ export async function updatePlayer(
   assertDb();
   const nextPayload = {
     ...payload,
-    level1Score: payload.level1Score ?? payload.score,
     updatedAt: Date.now(),
   };
-  await setDoc(doc(db!, "players", id), nextPayload, { merge: true });
+
+  if (payload.level1Score != null || payload.score != null) {
+    nextPayload.level1Score = payload.level1Score ?? payload.score;
+  }
+
+  await setDoc(doc(db!, "players", id), removeUndefined(nextPayload), { merge: true });
 }
 
 export async function setPlayerReady(id: string) {
@@ -352,4 +367,10 @@ function booleanValue(value: unknown) {
 
 function statusValue(value: unknown): PlayerStatus {
   return value === "Ready" || value === "Playing" || value === "Finished" ? value : "Waiting";
+}
+
+function removeUndefined<T extends Record<string, unknown>>(payload: T) {
+  return Object.fromEntries(
+    Object.entries(payload).filter(([, value]) => value !== undefined),
+  ) as Partial<T>;
 }

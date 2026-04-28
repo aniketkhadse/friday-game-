@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Player, PlayerStatus } from "@/utils/game";
 import {
+  clearLocalPlayerId,
   getLocalPlayerId,
   joinPlayer,
   setPlayerReady,
@@ -49,5 +50,10 @@ export function useLocalPlayer() {
     await setPlayerReady(player.id);
   }, [player?.id]);
 
-  return { player, setPlayer, join, syncPlayer, ready };
+  const clearPlayer = useCallback(() => {
+    clearLocalPlayerId();
+    setPlayer(null);
+  }, []);
+
+  return { player, setPlayer, join, syncPlayer, ready, clearPlayer };
 }

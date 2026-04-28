@@ -21,9 +21,10 @@ type PlayerStep =
 
 export function PlayerApp() {
   const { snapshot, error: syncError } = useGameRealtime();
-  const { player, setPlayer, join, syncPlayer, ready } = useLocalPlayer();
+  const { player, setPlayer, join, syncPlayer, ready, clearPlayer } = useLocalPlayer();
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [isJoining, setIsJoining] = useState(false);
   const [step, setStep] = useState<PlayerStep>("landing");
   const [finalMetrics, setFinalMetrics] = useState<TypingMetrics | null>(null);
   const [countdownValue, setCountdownValue] = useState(COUNTDOWN_SECONDS);
@@ -31,19 +32,29 @@ export function PlayerApp() {
   useEffect(() => {
     if (!player?.id || !snapshot) return;
     const livePlayer = snapshot.players.find((candidate) => candidate.id === player.id);
-    if (livePlayer) setPlayer(livePlayer);
-  }, [player?.id, setPlayer, snapshot]);
+    if (livePlayer) {
+      setPlayer(livePlayer);
+      return;
+    }
+
+    if (!player.name) {
+      clearPlayer();
+      setStep("landing");
+    }
+  }, [clearPlayer, player?.id, player?.name, setPlayer, snapshot]);
 
   useEffect(() => {
     if (!player?.id || !snapshot) return;
+    const livePlayer = snapshot.players.find((candidate) => candidate.id === player.id);
+    if (!livePlayer) return;
 
     if (snapshot.gameState === "LEVEL2_RUNNING") {
-      if (player.qualified && player.status !== "Finished") {
+      if (livePlayer.qualified && livePlayer.status !== "Finished") {
         setStep("level2");
         return;
       }
 
-      if (player.qualified && player.status === "Finished") {
+      if (livePlayer.qualified && livePlayer.status === "Finished") {
         setStep("level2Result");
         return;
       }
@@ -53,7 +64,7 @@ export function PlayerApp() {
     }
 
     if (snapshot.gameState === "ENDED") {
-      setStep(player.qualified ? "level2Result" : "notQualified");
+      setStep(livePlayer.qualified ? "level2Result" : "notQualified");
       return;
     }
 
@@ -68,16 +79,18 @@ export function PlayerApp() {
       return;
     }
 
-    if (snapshot.gameState === "LEVEL1_RUNNING" && player.status !== "Finished") {
+    if (snapshot.gameState === "LEVEL1_RUNNING" && livePlayer.status !== "Finished") {
       setStep("game");
-      void syncPlayer({ status: "Playing" });
+      if (livePlayer.status !== "Playing") {
+        void syncPlayer({ status: "Playing" });
+      }
       return;
     }
 
-    if (snapshot.gameState === "LEVEL1_DONE" || player.status === "Finished") {
+    if (snapshot.gameState === "LEVEL1_DONE" || livePlayer.status === "Finished") {
       setStep("result");
     }
-  }, [player?.id, player?.qualified, player?.status, snapshot, syncPlayer]);
+  }, [player?.id, snapshot, syncPlayer]);
 
   useEffect(() => {
     if (step !== "countdown" || !snapshot?.countdownEndsAt) return;
@@ -102,8 +115,17 @@ export function PlayerApp() {
     }
 
     setError("");
-    await join(cleanName);
-    setStep("instructions");
+    setIsJoining(true);
+
+    try {
+      await join(cleanName);
+      setStep("instructions");
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : "Unable to join game. Please try again.";
+      setError(message);
+    } finally {
+      setIsJoining(false);
+    }
   };
 
   const handleReady = async () => {
@@ -155,6 +177,14 @@ export function PlayerApp() {
     [syncPlayer],
   );
 
+  const handleJoinAgain = useCallback(() => {
+    clearPlayer();
+    setFinalMetrics(null);
+    setName("");
+    setError("");
+    setStep("landing");
+  }, [clearPlayer]);
+
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-5xl">
@@ -179,8 +209,12 @@ export function PlayerApp() {
                 maxLength={60}
               />
               {error ? <p className="mt-3 text-sm font-medium text-rose-600">{error}</p> : null}
-              <button className="mt-5 h-12 w-full rounded-lg bg-slate-950 px-5 font-bold text-white transition hover:bg-slate-800">
-                Join Game
+              <button
+                className="mt-5 h-12 w-full rounded-lg bg-slate-950 px-5 font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={isJoining}
+                type="submit"
+              >
+                {isJoining ? "Joining..." : "Join Game"}
               </button>
             </form>
           </Panel>
@@ -245,6 +279,12 @@ export function PlayerApp() {
               <Result label="Accuracy" value={`${resultMetrics.accuracy.toFixed(1)}%`} />
               <Result label="Final Score" value={resultMetrics.score.toFixed(1)} />
             </div>
+            <button
+              onClick={handleJoinAgain}
+              className="mt-6 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
+            >
+              Join as New Player
+            </button>
           </Panel>
         ) : null}
 
@@ -262,6 +302,12 @@ export function PlayerApp() {
               <Result label="Progress" value={`${player?.level2Progress ?? 0}%`} />
               <Result label="Level 2 Score" value={`${player?.level2Score ?? 0}`} />
             </div>
+            <button
+              onClick={handleJoinAgain}
+              className="mt-6 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
+            >
+              Join as New Player
+            </button>
           </Panel>
         ) : null}
 
@@ -272,6 +318,12 @@ export function PlayerApp() {
             <p className="mx-auto mt-3 max-w-xl text-slate-600">
               Level 2 is available only for the players selected by the admin after the typing race.
             </p>
+            <button
+              onClick={handleJoinAgain}
+              className="mt-6 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
+            >
+              Join as New Player
+            </button>
           </Panel>
         ) : null}
       </div>
