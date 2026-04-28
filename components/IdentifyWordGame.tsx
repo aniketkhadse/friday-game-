@@ -29,6 +29,7 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
   const [answer, setAnswer] = useState("");
   const [remainingMs, setRemainingMs] = useState(LEVEL_2_SECONDS_PER_QUESTION * 1000);
   const [reveal, setReveal] = useState<RevealState>(null);
+  const [feedback, setFeedback] = useState<"idle" | "correct" | "wrong">("idle");
   const scoreRef = useRef(0);
   const correctRef = useRef(0);
   const questionStartedAt = useRef(Date.now());
@@ -79,6 +80,7 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
       scoreRef.current += questionScore;
       if (wasCorrect) correctRef.current += 1;
 
+      setFeedback(wasCorrect ? "correct" : "idle");
       setReveal(wasCorrect ? null : { answer: question.answer, wasCorrect });
       advance(wasCorrect ? 0 : 2500);
     },
@@ -113,16 +115,26 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
 
       if (isLevel2AnswerCorrect(question.answer, value)) {
         finishQuestion(true);
+        return;
+      }
+
+      if (value.length >= question.answer.length) {
+        setFeedback("wrong");
+        window.setTimeout(() => setFeedback("idle"), 280);
       }
     },
     [finishQuestion, question.answer],
   );
 
   return (
-    <section className="mx-auto w-full max-w-3xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+    <section
+      className={`screen-enter mx-auto w-full max-w-3xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm ${
+        feedback === "correct" ? "flash-correct" : ""
+      } ${feedback === "wrong" ? "shake-once" : ""}`}
+    >
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Identify the Word</p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Guess the Word 🧠</p>
           <h2 className="mt-1 text-2xl font-black text-slate-950">
             Question {questionIndex + 1}/{LEVEL_2_QUESTIONS.length}
           </h2>
@@ -167,7 +179,9 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
 
       <div className="mt-5 min-h-8 text-center">
         {reveal ? (
-          <p className="text-lg font-black text-rose-700">Correct Answer: {reveal.answer}</p>
+          <p className="answer-highlight rounded-lg px-4 py-2 text-lg font-black text-rose-700">
+            Correct Answer: {reveal.answer}
+          </p>
         ) : (
           <p className="text-sm font-semibold text-slate-500">Wrong answer? Keep trying until the timer ends.</p>
         )}

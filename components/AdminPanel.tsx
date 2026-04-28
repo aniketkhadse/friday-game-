@@ -87,7 +87,7 @@ export function AdminPanel() {
             <div>
               <div className="text-sm font-semibold uppercase tracking-wide text-slate-500">Game State</div>
               <div className="mt-1 text-2xl font-black text-slate-950">
-                {isLoading ? "SYNCING" : formatState(gameState)}
+                {isLoading ? "SYNCING" : `Current Stage: ${formatState(gameState)}`}
               </div>
               {error ? <p className="mt-2 text-sm font-semibold text-rose-600">{error}</p> : null}
             </div>
@@ -109,8 +109,8 @@ export function AdminPanel() {
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Stat label="Total Players Joined" value={counts.total} />
+          <Stat label="Players Qualified" value={players.filter((player) => player.qualified).length} />
           <Stat label="Players Ready" value={counts.ready} />
-          <Stat label="Players Playing" value={counts.playing} />
           <Stat label="Players Finished" value={counts.finished} />
         </section>
 
@@ -209,7 +209,7 @@ function StateAction({
             />
           )}
         </div>
-        <MainButton label="Start Level 2" disabled={isActing} onClick={onStartLevel2} tone="indigo" />
+        <MainButton label="Start Guess the Word" disabled={isActing} onClick={onStartLevel2} tone="indigo" />
       </div>
     );
   }
@@ -307,7 +307,7 @@ function PlayerMonitor({ players }: { players: Player[] }) {
 function SelectedPlayers({ players }: { players: Player[] }) {
   return (
     <section className="rounded-lg border border-emerald-200 bg-white p-5 shadow-sm">
-      <h2 className="text-xl font-black text-slate-950">Selected for Level 2 🎉</h2>
+      <h2 className="text-xl font-black text-slate-950">Selected for Level 2 - Guess the Word 🎉</h2>
       <div className="mt-4 space-y-2">
         {players.map((player, index) => (
           <div className="flex items-center gap-3 rounded-lg bg-emerald-50 px-4 py-3" key={player.id}>
@@ -327,7 +327,7 @@ function Level2Leaderboard({ players }: { players: Player[] }) {
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 px-5 py-4">
-        <h2 className="text-lg font-bold text-slate-950">Level 2 Leaderboard</h2>
+        <h2 className="text-lg font-bold text-slate-950">Guess the Word Leaderboard</h2>
       </div>
       <LeaderboardTable players={ranked} scoreKey="level2" empty="Level 2 scores will appear during the round." />
     </section>

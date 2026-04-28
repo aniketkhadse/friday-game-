@@ -9,6 +9,7 @@ import { useLocalPlayer } from "@/hooks/useLocalPlayer";
 import {
   COUNTDOWN_SECONDS,
   isValidAristaUsername,
+  getTopLevel2Players,
   normalizeEmailInput,
   sortLevel2Leaderboard,
   TypingMetrics,
@@ -21,6 +22,8 @@ type PlayerStep =
   | "countdown"
   | "game"
   | "result"
+  | "level2Instructions"
+  | "level2Countdown"
   | "level2"
   | "level2Result"
   | "notQualified";
@@ -34,6 +37,8 @@ export function PlayerApp() {
   const [step, setStep] = useState<PlayerStep>("landing");
   const [finalMetrics, setFinalMetrics] = useState<TypingMetrics | null>(null);
   const [countdownValue, setCountdownValue] = useState(COUNTDOWN_SECONDS);
+  const [level2CountdownValue, setLevel2CountdownValue] = useState(3);
+  const [level2Ready, setLevel2Ready] = useState(false);
   const gameCanJoin = !snapshot || snapshot.gameState === "WAITING";
 
   useEffect(() => {
@@ -59,7 +64,9 @@ export function PlayerApp() {
 
     if (snapshot.gameState === "LEVEL2_RUNNING") {
       if (livePlayer.qualified && livePlayer.status !== "Finished") {
-        setStep("level2");
+        if (!level2Ready && step !== "level2Instructions") {
+          setStep("level2Instructions");
+        }
         return;
       }
 
@@ -99,7 +106,7 @@ export function PlayerApp() {
     if (snapshot.gameState === "LEVEL1_DONE" || livePlayer.status === "Finished") {
       setStep("result");
     }
-  }, [player?.id, snapshot, syncPlayer]);
+  }, [level2Ready, player?.id, snapshot, step, syncPlayer]);
 
   useEffect(() => {
     if (step !== "countdown" || !snapshot?.countdownEndsAt) return;
@@ -114,6 +121,22 @@ export function PlayerApp() {
 
     return () => window.clearInterval(timer);
   }, [snapshot?.countdownEndsAt, step]);
+
+  useEffect(() => {
+    if (step !== "level2Countdown") return;
+
+    setLevel2CountdownValue(3);
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      const secondsLeft = Math.max(0, 3 - Math.floor((Date.now() - startedAt) / 1000));
+      setLevel2CountdownValue(secondsLeft);
+      if (secondsLeft <= 0) {
+        setStep("level2");
+      }
+    }, 120);
+
+    return () => window.clearInterval(timer);
+  }, [step]);
 
   const handleJoin = async (event: FormEvent) => {
     event.preventDefault();
@@ -190,6 +213,11 @@ export function PlayerApp() {
     [syncPlayer],
   );
 
+  const handleStartLevel2Local = useCallback(() => {
+    setLevel2Ready(true);
+    setStep("level2Countdown");
+  }, []);
+
   const handleJoinAgain = useCallback(() => {
     clearPlayer();
     setFinalMetrics(null);
@@ -208,6 +236,12 @@ export function PlayerApp() {
     const ranked = sortLevel2Leaderboard(snapshot.players);
     const index = ranked.findIndex((candidate) => candidate.id === player.id);
     return index >= 0 ? index + 1 : null;
+  }, [player?.id, snapshot]);
+  const selectedForOfflineFinal = useMemo(() => {
+    if (!player?.id || !snapshot || snapshot.gameState !== "ENDED") return false;
+    return getTopLevel2Players(snapshot.players, snapshot.advancementPercent).some(
+      (candidate) => candidate.id === player.id,
+    );
   }, [player?.id, snapshot]);
 
   return (
@@ -308,29 +342,64 @@ export function PlayerApp() {
         ) : null}
 
         {step === "result" ? (
-          <Panel>
-            <h2 className="text-2xl font-bold text-slate-950">Result</h2>
-            <p className="mt-2 text-slate-600">{player?.email ?? player?.name ?? normalizeEmailInput(emailName)}</p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <FullResult selected={player?.qualified ?? false} finalized={snapshot?.gameState === "LEVEL1_DONE"}>
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Level 1 Result</p>
+            <h2 className={`result-pop mt-5 text-5xl font-black sm:text-6xl ${player?.qualified ? "text-emerald-700" : "text-rose-700"}`}>
+              {snapshot?.gameState === "LEVEL1_DONE"
+                ? player?.qualified
+                  ? "🎉 YOU ARE SELECTED FOR LEVEL 2 🎉"
+                  : hasLevel1Selection
+                    ? "❌ YOU ARE NOT SELECTED ❌"
+                    : "RESULTS ARE BEING FINALIZED"
+                : "LEVEL 1 COMPLETE"}
+            </h2>
+            {!player?.qualified && hasLevel1Selection ? (
+              <p className="mt-4 text-2xl font-bold text-slate-600">Better luck next time</p>
+            ) : null}
+            <p className="mt-4 text-slate-600">{player?.email ?? player?.name ?? normalizeEmailInput(emailName)}</p>
+            <div className="mx-auto mt-8 grid max-w-3xl gap-4 sm:grid-cols-3">
               <Result label="WPM" value={resultMetrics.wpm.toFixed(1)} />
               <Result label="Accuracy" value={`${resultMetrics.accuracy.toFixed(1)}%`} />
               <Result label="Final Score" value={resultMetrics.score.toFixed(1)} />
             </div>
-            {snapshot?.gameState === "LEVEL1_DONE" ? (
-              <p className={`mt-5 text-lg font-black ${player?.qualified ? "text-emerald-700" : "text-slate-600"}`}>
-                {player?.qualified
-                  ? "You are selected for Level 2"
-                  : hasLevel1Selection
-                    ? "Better luck next time"
-                    : "Results are being finalized"}
-              </p>
-            ) : null}
             <button
               onClick={handleJoinAgain}
-              className="mt-6 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
+              className="mt-8 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
             >
               Join as New Player
             </button>
+          </FullResult>
+        ) : null}
+
+        {step === "level2Instructions" ? (
+          <Panel>
+            <div className="screen-enter mx-auto max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Level 2</p>
+              <h2 className="mt-2 text-3xl font-black text-slate-950">Level 2 – Guess the Word</h2>
+              <ul className="mt-6 space-y-3 text-left text-slate-700">
+                <li>You will get 10 questions.</li>
+                <li>Each question has 20 seconds.</li>
+                <li>A hint and partial word will be shown.</li>
+                <li>Type the correct word.</li>
+                <li>Faster answers = higher score.</li>
+                <li>If time ends, correct answer will be shown.</li>
+              </ul>
+              <button
+                onClick={handleStartLevel2Local}
+                className="mt-7 h-12 rounded-lg bg-indigo-600 px-8 font-bold text-white transition hover:bg-indigo-700"
+              >
+                Start Level 2
+              </button>
+            </div>
+          </Panel>
+        ) : null}
+
+        {step === "level2Countdown" ? (
+          <Panel>
+            <p className="text-sm font-bold uppercase tracking-wide text-slate-500">Guess the Word begins in</p>
+            <div key={level2CountdownValue} className="countdown-pop mt-4 text-8xl font-black text-indigo-700">
+              {Math.max(1, level2CountdownValue)}
+            </div>
           </Panel>
         ) : null}
 
@@ -339,19 +408,19 @@ export function PlayerApp() {
         ) : null}
 
         {step === "level2Result" ? (
-          <Panel>
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Level 2 Complete</p>
-            <h2 className="mt-2 text-2xl font-bold text-slate-950">Identify the Word Result</h2>
+          <FullResult selected={selectedForOfflineFinal}>
+            <h2 className="result-pop text-5xl font-black text-slate-950 sm:text-6xl">🏆 FINAL RESULT 🏆</h2>
             <p className="mt-2 text-slate-600">{player?.email ?? player?.name ?? normalizeEmailInput(emailName)}</p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <div className="mx-auto mt-8 grid max-w-2xl gap-4 sm:grid-cols-2">
               <Result label="Rank" value={finalRank ? `#${finalRank}` : "-"} />
-              <Result label="Correct" value={`${player?.level2Correct ?? 0}/10`} />
               <Result label="Level 2 Score" value={`${player?.level2Score ?? 0}`} />
             </div>
-            {snapshot?.gameState === "ENDED" ? (
-              <p className="mt-5 text-lg font-black text-emerald-700">
-                You are selected for offline final round
+            {selectedForOfflineFinal ? (
+              <p className="mt-8 text-4xl font-black text-emerald-700">
+                🎉 YOU ARE SELECTED FOR OFFLINE FINAL 🎉
               </p>
+            ) : snapshot?.gameState === "ENDED" ? (
+              <p className="mt-8 text-2xl font-bold text-slate-600">Thank you for playing</p>
             ) : null}
             <button
               onClick={handleJoinAgain}
@@ -359,7 +428,7 @@ export function PlayerApp() {
             >
               Join as New Player
             </button>
-          </Panel>
+          </FullResult>
         ) : null}
 
         {step === "notQualified" ? (
@@ -384,7 +453,26 @@ export function PlayerApp() {
 
 function Panel({ children }: { children: React.ReactNode }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">
+    <section className="screen-enter rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">
+      {children}
+    </section>
+  );
+}
+
+function FullResult({
+  children,
+  selected,
+}: {
+  children: React.ReactNode;
+  selected: boolean;
+  finalized?: boolean;
+}) {
+  return (
+    <section
+      className={`screen-enter flex min-h-[58vh] flex-col items-center justify-center rounded-lg border p-8 text-center shadow-sm ${
+        selected ? "border-emerald-200 bg-emerald-50" : "border-rose-200 bg-rose-50"
+      }`}
+    >
       {children}
     </section>
   );

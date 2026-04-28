@@ -62,3 +62,87 @@ textarea {
 .countdown-pop {
   animation: countdown-pop 900ms ease-in-out both;
 }
+
+@keyframes soft-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes result-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-5px);
+  }
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes flash-correct {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+    border-color: rgb(16, 185, 129);
+  }
+  100% {
+    box-shadow: 0 0 0 14px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes answer-highlight {
+  0%,
+  100% {
+    background-color: rgb(255, 241, 242);
+  }
+  50% {
+    background-color: rgb(254, 226, 226);
+  }
+}
+
+.screen-enter {
+  animation: soft-enter 260ms ease-out both;
+}
+
+.result-pop {
+  animation: result-pop 700ms ease-out both;
+}
+
+.shake-once {
+  animation: shake 260ms ease-in-out;
+}
+
+.flash-correct {
+  animation: flash-correct 420ms ease-out;
+}
+
+.answer-highlight {
+  animation: answer-highlight 900ms ease-in-out infinite;
+}
