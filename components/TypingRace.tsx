@@ -17,6 +17,7 @@ type TypingRaceProps = {
 export function TypingRace({ roundEndsAt, onFinish, onProgress }: TypingRaceProps) {
   const [typed, setTyped] = useState("");
   const [remaining, setRemaining] = useState(ROUND_SECONDS);
+  const [isLocked, setIsLocked] = useState(false);
   const startedAt = useRef(Date.now());
   const finished = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -31,6 +32,7 @@ export function TypingRace({ roundEndsAt, onFinish, onProgress }: TypingRaceProp
     (finalTyped: string) => {
       if (finished.current) return;
       finished.current = true;
+      setIsLocked(true);
       const elapsedSeconds = Math.min(ROUND_SECONDS, (Date.now() - startedAt.current) / 1000);
       onFinish(calculateTypingMetrics(CHALLENGE_PARAGRAPH, finalTyped, elapsedSeconds));
     },
@@ -69,7 +71,7 @@ export function TypingRace({ roundEndsAt, onFinish, onProgress }: TypingRaceProp
   );
 
   return (
-    <section className="mx-auto w-full max-w-5xl">
+    <section className="mx-auto w-full max-w-5xl select-none">
       <div className="grid gap-4 sm:grid-cols-4">
         <Metric label="Time" value={`${remaining}s`} />
         <Metric label="WPM" value={metrics.wpm.toFixed(1)} />
@@ -94,11 +96,12 @@ export function TypingRace({ roundEndsAt, onFinish, onProgress }: TypingRaceProp
         onPaste={(event) => event.preventDefault()}
         onDrop={(event) => event.preventDefault()}
         onContextMenu={(event) => event.preventDefault()}
+        disabled={isLocked}
         spellCheck={false}
         autoCapitalize="off"
         autoComplete="off"
         autoCorrect="off"
-        className="mt-5 h-36 w-full resize-none rounded-lg border border-slate-300 bg-white p-4 text-lg leading-8 text-slate-900 shadow-sm outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+        className="mt-5 h-36 w-full resize-none rounded-lg border border-slate-300 bg-white p-4 text-lg leading-8 text-slate-900 shadow-sm outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200 disabled:bg-slate-100 disabled:text-slate-500"
         placeholder="Start typing here..."
         aria-label="Typing input"
       />

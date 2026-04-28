@@ -128,7 +128,7 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
 
   return (
     <section
-      className={`screen-enter mx-auto w-full max-w-3xl rounded-lg border border-slate-200 bg-white p-6 shadow-sm ${
+      className={`screen-enter mx-auto w-full max-w-3xl select-none rounded-lg border border-slate-200 bg-white p-6 shadow-sm ${
         feedback === "correct" ? "flash-correct" : ""
       } ${feedback === "wrong" ? "shake-once" : ""}`}
     >
@@ -169,6 +169,7 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
         value={answer}
         onChange={handleChange}
         onPaste={(event) => event.preventDefault()}
+        onContextMenu={(event) => event.preventDefault()}
         disabled={locked.current}
         className="mt-8 h-14 w-full rounded-lg border border-slate-300 px-4 text-center text-2xl font-bold uppercase tracking-wide text-slate-950 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200 disabled:bg-slate-100 disabled:text-slate-500"
         aria-label="Word answer"

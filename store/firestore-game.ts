@@ -32,6 +32,8 @@ const PLAYER_ID_KEY = "fun-friday-player-id";
 
 type GameDoc = {
   gameState?: GameState;
+  level1StartedAt?: number | null;
+  level2StartedAt?: number | null;
   countdownEndsAt?: number | null;
   roundEndsAt?: number | null;
   advancementPercent?: number;
@@ -43,6 +45,8 @@ export type AdvancementMode = "percent" | "count";
 
 const defaultGameDoc: Required<Omit<GameDoc, "updatedAt">> = {
   gameState: "WAITING",
+  level1StartedAt: null,
+  level2StartedAt: null,
   countdownEndsAt: null,
   roundEndsAt: null,
   advancementPercent: DEFAULT_ADVANCEMENT_PERCENT,
@@ -79,6 +83,8 @@ export function subscribeGameSnapshot(callback: (snapshot: GameSnapshot) => void
 
     callback({
       gameState: gameDoc.gameState,
+      level1StartedAt: gameDoc.level1StartedAt,
+      level2StartedAt: gameDoc.level2StartedAt,
       countdownEndsAt: gameDoc.countdownEndsAt,
       roundEndsAt: gameDoc.roundEndsAt,
       advancementPercent: gameDoc.advancementPercent,
@@ -101,6 +107,8 @@ export function subscribeGameSnapshot(callback: (snapshot: GameSnapshot) => void
       const data = snapshot.data() as GameDoc;
       gameDoc = {
         gameState: data.gameState ?? "WAITING",
+        level1StartedAt: data.level1StartedAt ?? null,
+        level2StartedAt: data.level2StartedAt ?? null,
         countdownEndsAt: data.countdownEndsAt ?? null,
         roundEndsAt: data.roundEndsAt ?? null,
         advancementPercent: data.advancementPercent ?? DEFAULT_ADVANCEMENT_PERCENT,
@@ -166,6 +174,8 @@ export async function joinPlayer(name: string) {
     level2Progress: 0,
     level2Score: 0,
     level2Correct: 0,
+    tabSwitchCount: 0,
+    suspiciousActivity: false,
   };
 
   await setDoc(doc(db!, "players", id), player, { merge: false });
@@ -175,7 +185,22 @@ export async function joinPlayer(name: string) {
 
 export async function updatePlayer(
   id: string,
-  payload: Partial<Pick<Player, "status" | "progress" | "wpm" | "accuracy" | "score" | "level1Score" | "level2Progress" | "level2Score" | "level2Correct">>,
+  payload: Partial<
+    Pick<
+      Player,
+      | "status"
+      | "progress"
+      | "wpm"
+      | "accuracy"
+      | "score"
+      | "level1Score"
+      | "level2Progress"
+      | "level2Score"
+      | "level2Correct"
+      | "tabSwitchCount"
+      | "suspiciousActivity"
+    >
+  >,
 ) {
   assertDb();
   const nextPayload = {
@@ -205,6 +230,7 @@ export async function startLevel1() {
     doc(db!, "games", GAME_DOC),
     {
       gameState: "LEVEL1_RUNNING",
+      level1StartedAt: countdownEndsAt,
       countdownEndsAt,
       roundEndsAt: countdownEndsAt + ROUND_SECONDS * 1000,
       updatedAt: now,
@@ -286,7 +312,7 @@ export async function startLevel2() {
   const batch = writeBatch(db!);
   batch.set(
     doc(db!, "games", GAME_DOC),
-    { gameState: "LEVEL2_RUNNING", countdownEndsAt: null, roundEndsAt: null, updatedAt: now },
+    { gameState: "LEVEL2_RUNNING", level2StartedAt: now, countdownEndsAt: null, roundEndsAt: null, updatedAt: now },
     { merge: true },
   );
 
@@ -359,6 +385,8 @@ function normalizePlayer(id: string, data: Record<string, unknown>): Player {
     level2Progress: numberValue(data.level2Progress),
     level2Score: numberValue(data.level2Score),
     level2Correct: numberValue(data.level2Correct),
+    tabSwitchCount: numberValue(data.tabSwitchCount),
+    suspiciousActivity: booleanValue(data.suspiciousActivity),
   };
 }
 

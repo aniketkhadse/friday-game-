@@ -66,6 +66,8 @@ export function getSnapshot(): GameSnapshot {
 
   return {
     gameState,
+    level1StartedAt: game.countdownEndsAt,
+    level2StartedAt: null,
     countdownEndsAt: game.countdownEndsAt,
     roundEndsAt: game.roundEndsAt,
     advancementPercent: game.advancementPercent,
@@ -105,6 +107,8 @@ export function upsertPlayer(input: {
     level2Progress: current?.level2Progress ?? 0,
     level2Score: current?.level2Score ?? 0,
     level2Correct: current?.level2Correct ?? 0,
+    tabSwitchCount: current?.tabSwitchCount ?? 0,
+    suspiciousActivity: current?.suspiciousActivity ?? false,
   };
 
   game.players.set(id, player);

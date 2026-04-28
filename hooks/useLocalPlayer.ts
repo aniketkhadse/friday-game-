@@ -37,6 +37,8 @@ export function useLocalPlayer() {
       level2Progress?: number;
       level2Score?: number;
       level2Correct?: number;
+      tabSwitchCount?: number;
+      suspiciousActivity?: boolean;
     }) => {
       if (!player?.id) return null;
       await updatePlayer(player.id, payload);

@@ -89,10 +89,14 @@ export type Player = {
   level2Progress: number;
   level2Score: number;
   level2Correct: number;
+  tabSwitchCount: number;
+  suspiciousActivity: boolean;
 };
 
 export type GameSnapshot = {
   gameState: GameState;
+  level1StartedAt: number | null;
+  level2StartedAt: number | null;
   countdownEndsAt: number | null;
   roundEndsAt: number | null;
   advancementPercent: number;

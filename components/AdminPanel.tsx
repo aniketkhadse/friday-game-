@@ -282,6 +282,7 @@ function PlayerMonitor({ players }: { players: Player[] }) {
               <th className="px-5 py-3">Status</th>
               <th className="px-5 py-3">Qualified</th>
               <th className="px-5 py-3">Progress</th>
+              <th className="px-5 py-3">Fair Play</th>
               <th className="px-5 py-3">L1 Score</th>
               <th className="px-5 py-3">L2 Score</th>
             </tr>
@@ -302,6 +303,15 @@ function PlayerMonitor({ players }: { players: Player[] }) {
                     <span className="w-10 text-slate-600">{player.progress.toFixed(0)}%</span>
                   </div>
                 </td>
+                <td className="px-5 py-3">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-bold ${
+                      player.suspiciousActivity ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                    }`}
+                  >
+                    {player.suspiciousActivity ? `Review (${player.tabSwitchCount})` : "OK"}
+                  </span>
+                </td>
                 <td className="px-5 py-3 font-bold text-slate-900">
                   {(player.level1Score || player.score).toFixed(1)}
                 </td>
@@ -310,7 +320,7 @@ function PlayerMonitor({ players }: { players: Player[] }) {
             ))}
             {players.length === 0 ? (
               <tr>
-                <td className="px-5 py-8 text-center text-slate-500" colSpan={6}>
+                <td className="px-5 py-8 text-center text-slate-500" colSpan={7}>
                   Waiting for players to join.
                 </td>
               </tr>

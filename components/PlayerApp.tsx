@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { BrandHeader } from "@/components/BrandHeader";
 import { IdentifyWordGame } from "@/components/IdentifyWordGame";
 import { TypingRace } from "@/components/TypingRace";
+import { useFairPlay } from "@/hooks/useFairPlay";
 import { useGameRealtime } from "@/hooks/useGameRealtime";
 import { useLocalPlayer } from "@/hooks/useLocalPlayer";
 import {
@@ -247,6 +248,19 @@ export function PlayerApp() {
     step === "level2" || step === "level2Instructions" || step === "level2Countdown" || step === "level2Result"
       ? "Level 2 Guess the Word"
       : "Level 1 Typing Race";
+  const fairPlayEnabled = ["countdown", "game", "level2Countdown", "level2"].includes(step);
+  const handleTabSwitch = useCallback(() => {
+    if (!player?.id) return;
+    const nextCount = (player.tabSwitchCount ?? 0) + 1;
+    void syncPlayer({
+      tabSwitchCount: nextCount,
+      suspiciousActivity: nextCount >= 2 || player.suspiciousActivity,
+    });
+  }, [player?.id, player?.suspiciousActivity, player?.tabSwitchCount, syncPlayer]);
+  const { tabWarning, devToolsWarning } = useFairPlay({
+    enabled: fairPlayEnabled,
+    onTabSwitch: handleTabSwitch,
+  });
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
@@ -255,6 +269,17 @@ export function PlayerApp() {
         {syncError ? (
           <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
             {syncError}
+          </div>
+        ) : null}
+        {fairPlayEnabled ? (
+          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm font-bold text-emerald-800">
+            Fair Play Enabled - Please stay on this screen
+            {tabWarning ? (
+              <span className="ml-2 text-amber-700">Stay on the game screen for fair play.</span>
+            ) : null}
+            {devToolsWarning ? (
+              <span className="ml-2 text-slate-600">DevTools may be open.</span>
+            ) : null}
           </div>
         ) : null}
 
