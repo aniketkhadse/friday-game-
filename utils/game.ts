@@ -1,66 +1,31 @@
 export const GAME_TITLE = "Fun Games";
 export const GAME_SUBTITLE = "By Technology & Development Team";
 export const ROUND_SECONDS = 60;
-export const COUNTDOWN_SECONDS = 5;
+export const COUNTDOWN_SECONDS = 15;
 
 export const CHALLENGE_PARAGRAPH =
-  "The quick brown fox jumps over the lazy dog while typing complex keyboard sequences efficiently improves accuracy and speed in real world development scenarios.";
+  "In a data-driven digital environment, professionals must process and communicate information with speed and precision. Tasks like drafting reports, debugging code, or writing emails demand accuracy, where even a small mistake in punctuation or symbols (!, @, #, $, %) can change meaning. For example, expressions like (a+b)^2 or values such as 45% and 78.9% require careful typing. Maintaining consistency while switching between uppercase, lowercase, and special characters is essential. Those who type accurately under pressure gain a clear advantage in productivity and efficiency.";
 
 export const DEFAULT_ADVANCEMENT_PERCENT = 30;
 export const LEVEL_2_SECONDS_PER_QUESTION = 20;
 export const EMAIL_DOMAIN = "@aristasystems.in";
 
 export const LEVEL_2_QUESTIONS = [
-  {
-    hint: "Morning ka hero, bina iske aankh nahi khulti ☕",
-    pattern: "_ O F F _ E",
-    answer: "COFFEE",
-  },
-  {
-    hint: "Sabka favorite fast food, diet ka dushman 🍕",
-    pattern: "_ I Z Z _",
-    answer: "PIZZA",
-  },
-  {
-    hint: "Office me sabka sabse bada tension… Monday morning 😭",
-    pattern: "_ E E _ I _ G",
-    answer: "MEETING",
-  },
-  {
-    hint: "Iske bina salary ka kya fayda 💸",
-    pattern: "_ H O _ P I _ G",
-    answer: "SHOPPING",
-  },
-  {
-    hint: "Ghar ka sabse powerful remote control 😅",
-    pattern: "_ A M I _ Y",
-    answer: "FAMILY",
-  },
-  {
-    hint: "Boss paas ho toh ye automatically badh jata hai 😬",
-    pattern: "_ R E _ S U _ E",
-    answer: "PRESSURE",
-  },
-  {
-    hint: "Weekend ka best part 😎",
-    pattern: "_ N T E _ T A _ N M E N T",
-    answer: "ENTERTAINMENT",
-  },
-  {
-    hint: "Shaadi ho ya party 💃",
-    pattern: "_ E L E _ R A _ I O N",
-    answer: "CELEBRATION",
-  },
-  {
-    hint: "Password bhoolne ke baad yaad aata hai 😵",
-    pattern: "_ E M E _ B _ A N C E",
-    answer: "REMEMBRANCE",
-  },
-  {
-    hint: "Life ka asli struggle ⚖️",
-    pattern: "_ E S P O N _ I B I _ I T Y",
-    answer: "RESPONSIBILITY",
-  },
+  { hint: "Subah uthne ka biggest enemy 😴", pattern: "_ L A _ M", answer: "ALARM" },
+  { hint: "Garmi me sabse bada savior 🧊", pattern: "_ O L D _ R I N _", answer: "COLDDRINK" },
+  { hint: "Office me bina iske kaam ruk jata hai 💻", pattern: "_ N T E _ N E T", answer: "INTERNET" },
+  { hint: "Kaam karne ka jagah 🏢", pattern: "_ F F I _ E", answer: "OFFICE" },
+  { hint: "Time dekhne ke liye ⏰", pattern: "_ L O _ K", answer: "CLOCK" },
+  { hint: "Khane ke baad sabko chahiye 🍰", pattern: "_ E S _ E R T", answer: "DESSERT" },
+  { hint: "Paise rakhne ka jagah 👛", pattern: "_ A L L _ T", answer: "WALLET" },
+  { hint: "Travel ka best partner ✈️", pattern: "_ U I _ C A S E", answer: "SUITCASE" },
+  { hint: "Jab kaam zyada ho jata hai 😵", pattern: "_ T R E _ S", answer: "STRESS" },
+  { hint: "TV ya phone me dekhte hai 🎬", pattern: "_ O V I _", answer: "MOVIE" },
+  { hint: "Road pe chalane ke liye 🚗", pattern: "_ E H I _ L E", answer: "VEHICLE" },
+  { hint: "Paise kamaane ka main reason 💼", pattern: "_ A R _ E R", answer: "CAREER" },
+  { hint: "Ghar me sabka favorite jagah 🛏️", pattern: "_ E D R _ O M", answer: "BEDROOM" },
+  { hint: "Mobile charge karne ke liye 🔌", pattern: "_ H A _ G E R", answer: "CHARGER" },
+  { hint: "Future ke liye planning 📊", pattern: "_ T R A _ E G Y", answer: "STRATEGY" }
 ] as const;
 
 export type GameState =
