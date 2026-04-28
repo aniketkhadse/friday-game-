@@ -306,6 +306,21 @@ export async function selectLevel2Players(input: { mode: AdvancementMode; value:
   await batch.commit();
 }
 
+export async function saveLevel3Selection(input: { mode: AdvancementMode; value: number }) {
+  assertDb();
+  const batch = writeBatch(db!);
+  batch.set(
+    doc(db!, "games", GAME_DOC),
+    {
+      advancementPercent: input.mode === "percent" ? normalizePercent(input.value) : DEFAULT_ADVANCEMENT_PERCENT,
+      selectedCount: input.mode === "count" ? Math.max(0, Math.floor(input.value)) : null,
+      updatedAt: Date.now(),
+    },
+    { merge: true },
+  );
+  await batch.commit();
+}
+
 export async function startLevel2() {
   assertDb();
   const now = Date.now();

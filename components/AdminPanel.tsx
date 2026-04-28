@@ -9,6 +9,7 @@ import {
   endLevel1,
   endLevel2,
   resetGame,
+  saveLevel3Selection,
   selectLevel2Players,
   startLevel1,
   startLevel2,
@@ -133,6 +134,7 @@ export function AdminPanel() {
             selectionValue={level3SelectionValue}
             onSelectionMode={setLevel3SelectionMode}
             onSelectionValue={setLevel3SelectionValue}
+            onSaveSelection={() => void runAction(() => saveLevel3Selection({ mode: level3SelectionMode, value: level3SelectionValue }))}
           />
         ) : (
           <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.15fr]">
@@ -376,6 +378,7 @@ function FinalWinners({
   selectionValue: number;
   onSelectionMode: (mode: AdvancementMode) => void;
   onSelectionValue: (value: number) => void;
+  onSaveSelection: () => void;
 }) {
   return (
     <div className="mt-6 space-y-6">
@@ -421,9 +424,12 @@ function FinalWinners({
               />
             )}
           </div>
-          <div className="rounded-lg bg-indigo-600 px-6 py-3 text-center font-bold text-white">
+          <button
+            onClick={onSaveSelection}
+            className="rounded-lg bg-indigo-600 px-6 py-3 text-center font-bold text-white transition hover:bg-indigo-700"
+          >
             Select for Level 3 Offline
-          </div>
+          </button>
         </div>
       </section>
 

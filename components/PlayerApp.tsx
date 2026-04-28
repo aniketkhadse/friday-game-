@@ -11,6 +11,7 @@ import {
   COUNTDOWN_SECONDS,
   isValidAristaUsername,
   getTopLevel2Players,
+  getTopLevel2PlayersByCount,
   normalizeEmailInput,
   sortLevel2Leaderboard,
   TypingMetrics,
@@ -240,9 +241,11 @@ export function PlayerApp() {
   }, [player?.id, snapshot]);
   const selectedForOfflineFinal = useMemo(() => {
     if (!player?.id || !snapshot || snapshot.gameState !== "ENDED") return false;
-    return getTopLevel2Players(snapshot.players, snapshot.advancementPercent).some(
-      (candidate) => candidate.id === player.id,
-    );
+    const selected =
+      snapshot.selectedCount !== null
+        ? getTopLevel2PlayersByCount(snapshot.players, snapshot.selectedCount)
+        : getTopLevel2Players(snapshot.players, snapshot.advancementPercent);
+    return selected.some((candidate) => candidate.id === player.id);
   }, [player?.id, snapshot]);
   const stageLabel =
     step === "level2" || step === "level2Instructions" || step === "level2Countdown" || step === "level2Result"
@@ -391,7 +394,7 @@ export function PlayerApp() {
               <Result label="Accuracy" value={`${resultMetrics.accuracy.toFixed(1)}%`} />
               <Result label="Final Score" value={resultMetrics.score.toFixed(1)} />
             </div>
-            {!player?.qualified ? (
+            {!player?.qualified && hasLevel1Selection ? (
               <button
                 onClick={handleJoinAgain}
                 className="mt-8 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
