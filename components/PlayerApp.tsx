@@ -41,6 +41,7 @@ export function PlayerApp() {
   const [countdownValue, setCountdownValue] = useState(COUNTDOWN_SECONDS);
   const [level2CountdownValue, setLevel2CountdownValue] = useState(3);
   const [level2Ready, setLevel2Ready] = useState(false);
+  const [localCountdownEndsAt, setLocalCountdownEndsAt] = useState<number | null>(null);
   const gameCanJoin = !snapshot || snapshot.gameState === "WAITING";
 
   useEffect(() => {
@@ -88,11 +89,11 @@ export function PlayerApp() {
 
     if (
       snapshot.gameState === "LEVEL1_RUNNING" &&
-      snapshot.countdownEndsAt &&
-      Date.now() < snapshot.countdownEndsAt
+      localCountdownEndsAt &&
+      Date.now() < localCountdownEndsAt
     ) {
       setStep("countdown");
-      const secondsLeft = Math.max(1, Math.ceil((snapshot.countdownEndsAt - snapshot.serverNow) / 1000));
+      const secondsLeft = Math.max(1, Math.ceil((localCountdownEndsAt - Date.now()) / 1000));
       setCountdownValue(secondsLeft);
       return;
     }
@@ -108,13 +109,21 @@ export function PlayerApp() {
     if (snapshot.gameState === "LEVEL1_DONE" || livePlayer.status === "Finished") {
       setStep("result");
     }
-  }, [level2Ready, player?.id, snapshot, step, syncPlayer]);
+  }, [level2Ready, player?.id, snapshot, step, syncPlayer, localCountdownEndsAt]);
 
   useEffect(() => {
-    if (step !== "countdown" || !snapshot?.countdownEndsAt) return;
+    if (snapshot?.gameState === "LEVEL1_RUNNING" && !localCountdownEndsAt && step !== "result" && step !== "game") {
+      setLocalCountdownEndsAt(Date.now() + COUNTDOWN_SECONDS * 1000);
+    } else if (snapshot?.gameState !== "LEVEL1_RUNNING" && localCountdownEndsAt) {
+      setLocalCountdownEndsAt(null);
+    }
+  }, [snapshot?.gameState, localCountdownEndsAt, step]);
+
+  useEffect(() => {
+    if (step !== "countdown" || !localCountdownEndsAt) return;
 
     const timer = window.setInterval(() => {
-      const secondsLeft = Math.max(0, Math.ceil((snapshot.countdownEndsAt! - Date.now()) / 1000));
+      const secondsLeft = Math.max(0, Math.ceil((localCountdownEndsAt - Date.now()) / 1000));
       setCountdownValue(secondsLeft);
       if (secondsLeft <= 0) {
         setStep("game");
@@ -122,7 +131,7 @@ export function PlayerApp() {
     }, 120);
 
     return () => window.clearInterval(timer);
-  }, [snapshot?.countdownEndsAt, step]);
+  }, [localCountdownEndsAt, step]);
 
   useEffect(() => {
     if (step !== "level2Countdown") return;

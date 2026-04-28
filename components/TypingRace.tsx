@@ -45,7 +45,7 @@ export function TypingRace({ roundEndsAt, onFinish, onProgress }: TypingRaceProp
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      const targetEnd = roundEndsAt ?? startedAt.current + ROUND_SECONDS * 1000;
+      const targetEnd = startedAt.current + ROUND_SECONDS * 1000;
       const nextRemaining = Math.max(0, Math.ceil((targetEnd - Date.now()) / 1000));
       setRemaining(nextRemaining);
 
@@ -55,7 +55,7 @@ export function TypingRace({ roundEndsAt, onFinish, onProgress }: TypingRaceProp
     }, 250);
 
     return () => window.clearInterval(timer);
-  }, [finish, roundEndsAt, typed]);
+  }, [finish, typed]);
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLTextAreaElement>) => {
