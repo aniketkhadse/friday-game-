@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Fun Friday Challenge",
+  title: "Fun Games",
   description: "Internal office typing challenge by Technology & Development Team",
 };
 

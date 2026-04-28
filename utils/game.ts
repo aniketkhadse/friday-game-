@@ -1,4 +1,4 @@
-export const GAME_TITLE = "Fun Friday Challenge 🎯";
+export const GAME_TITLE = "Fun Games";
 export const GAME_SUBTITLE = "By Technology & Development Team";
 export const ROUND_SECONDS = 60;
 export const COUNTDOWN_SECONDS = 5;
@@ -203,6 +203,11 @@ export function getTopLevel2Players(players: Player[], topPercent = DEFAULT_ADVA
   const ranked = sortLevel2Leaderboard(players).filter((player) => player.level2Score > 0);
   const topCount = Math.max(1, Math.ceil(ranked.length * (topPercent / 100)));
   return ranked.slice(0, topCount);
+}
+
+export function getTopLevel2PlayersByCount(players: Player[], count: number) {
+  const ranked = sortLevel2Leaderboard(players).filter((player) => player.level2Score > 0);
+  return ranked.slice(0, Math.max(0, Math.min(count, ranked.length)));
 }
 
 export function normalizeEmailInput(input: string) {

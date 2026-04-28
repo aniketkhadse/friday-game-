@@ -243,11 +243,15 @@ export function PlayerApp() {
       (candidate) => candidate.id === player.id,
     );
   }, [player?.id, snapshot]);
+  const stageLabel =
+    step === "level2" || step === "level2Instructions" || step === "level2Countdown" || step === "level2Result"
+      ? "Level 2 Guess the Word"
+      : "Level 1 Typing Race";
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="w-full max-w-5xl">
-        <BrandHeader />
+        <BrandHeader stage={stageLabel} />
         {syncError ? (
           <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
             {syncError}
@@ -362,12 +366,14 @@ export function PlayerApp() {
               <Result label="Accuracy" value={`${resultMetrics.accuracy.toFixed(1)}%`} />
               <Result label="Final Score" value={resultMetrics.score.toFixed(1)} />
             </div>
-            <button
-              onClick={handleJoinAgain}
-              className="mt-8 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
-            >
-              Join as New Player
-            </button>
+            {!player?.qualified ? (
+              <button
+                onClick={handleJoinAgain}
+                className="mt-8 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
+              >
+                Join as New Player
+              </button>
+            ) : null}
           </FullResult>
         ) : null}
 
@@ -375,7 +381,7 @@ export function PlayerApp() {
           <Panel>
             <div className="screen-enter mx-auto max-w-2xl">
               <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Level 2</p>
-              <h2 className="mt-2 text-3xl font-black text-slate-950">Level 2 – Guess the Word</h2>
+              <h2 className="mt-2 text-3xl font-black text-slate-950">Level 2 - Guess the Word</h2>
               <ul className="mt-6 space-y-3 text-left text-slate-700">
                 <li>You will get 10 questions.</li>
                 <li>Each question has 20 seconds.</li>
@@ -422,12 +428,14 @@ export function PlayerApp() {
             ) : snapshot?.gameState === "ENDED" ? (
               <p className="mt-8 text-3xl font-black text-rose-700">You are not selected for Level 3 offline</p>
             ) : null}
-            <button
-              onClick={handleJoinAgain}
-              className="mt-6 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
-            >
-              Join as New Player
-            </button>
+            {snapshot?.gameState === "ENDED" && !selectedForOfflineFinal ? (
+              <button
+                onClick={handleJoinAgain}
+                className="mt-6 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
+              >
+                Join as New Player
+              </button>
+            ) : null}
           </FullResult>
         ) : null}
 

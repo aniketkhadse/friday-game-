@@ -19,6 +19,7 @@ import {
   getTopLevel1Players,
   getTopLevel1PlayersByCount,
   getTopLevel2Players,
+  getTopLevel2PlayersByCount,
   GameState,
   Player,
   sortLevel2Leaderboard,
@@ -28,6 +29,8 @@ export function AdminPanel() {
   const { snapshot, isLoading, error } = useGameRealtime();
   const [selectionMode, setSelectionMode] = useState<AdvancementMode>("percent");
   const [selectionValue, setSelectionValue] = useState(30);
+  const [level3SelectionMode, setLevel3SelectionMode] = useState<AdvancementMode>("count");
+  const [level3SelectionValue, setLevel3SelectionValue] = useState(2);
   const [isActing, setIsActing] = useState(false);
   const players = snapshot?.players ?? [];
   const gameState = snapshot?.gameState ?? "WAITING";
@@ -45,8 +48,11 @@ export function AdminPanel() {
   }, [players, selectionMode, selectionValue]);
   const finalWinners = useMemo(() => sortLevel2Leaderboard(players), [players]);
   const selectedForLevel3 = useMemo(
-    () => getTopLevel2Players(players, selectionMode === "percent" ? selectionValue : 30),
-    [players, selectionMode, selectionValue],
+    () =>
+      level3SelectionMode === "count"
+        ? getTopLevel2PlayersByCount(players, level3SelectionValue)
+        : getTopLevel2Players(players, level3SelectionValue),
+    [level3SelectionMode, level3SelectionValue, players],
   );
 
   async function runAction(action: () => Promise<void>) {
@@ -85,7 +91,7 @@ export function AdminPanel() {
   return (
     <main className="min-h-screen px-4 py-8">
       <div className="mx-auto max-w-7xl">
-        <BrandHeader />
+        <BrandHeader stage={gameState === "LEVEL2_RUNNING" || gameState === "ENDED" ? "Level 2 Guess the Word" : "Level 1 Typing Race"} />
 
         <section className="mb-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -120,7 +126,14 @@ export function AdminPanel() {
         </section>
 
         {gameState === "ENDED" ? (
-          <FinalWinners players={finalWinners} selectedPlayers={selectedForLevel3} />
+          <FinalWinners
+            players={finalWinners}
+            selectedPlayers={selectedForLevel3}
+            selectionMode={level3SelectionMode}
+            selectionValue={level3SelectionValue}
+            onSelectionMode={setLevel3SelectionMode}
+            onSelectionValue={setLevel3SelectionValue}
+          />
         ) : (
           <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_1.15fr]">
             <PlayerMonitor players={players} />
@@ -342,15 +355,75 @@ function Level2Leaderboard({ players }: { players: Player[] }) {
 function FinalWinners({
   players,
   selectedPlayers,
+  selectionMode,
+  selectionValue,
+  onSelectionMode,
+  onSelectionValue,
 }: {
   players: Player[];
   selectedPlayers: Player[];
+  selectionMode: AdvancementMode;
+  selectionValue: number;
+  onSelectionMode: (mode: AdvancementMode) => void;
+  onSelectionValue: (value: number) => void;
 }) {
   return (
-    <div className="mt-6 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-      <section className="rounded-lg border border-emerald-200 bg-white p-6 shadow-sm">
+    <div className="mt-6 space-y-6">
+      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div>
+            <label className="text-sm font-bold text-slate-800" htmlFor="level3SelectionMode">
+              Select Players By
+            </label>
+            <select
+              id="level3SelectionMode"
+              value={selectionMode}
+              onChange={(event) => onSelectionMode(event.target.value as AdvancementMode)}
+              className="mt-2 h-12 rounded-lg border border-slate-300 bg-white px-4 font-semibold text-slate-900 outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+            >
+              <option value="count">Number</option>
+              <option value="percent">Percentage</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm font-bold text-slate-800" htmlFor="level3SelectionValue">
+              {selectionMode === "percent" ? "Advance %" : "Advance Count"}
+            </label>
+            {selectionMode === "percent" ? (
+              <select
+                id="level3SelectionValue"
+                value={selectionValue}
+                onChange={(event) => onSelectionValue(Number(event.target.value))}
+                className="mt-2 h-12 rounded-lg border border-slate-300 bg-white px-4 font-semibold text-slate-900 outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+              >
+                <option value={30}>30%</option>
+                <option value={50}>50%</option>
+                <option value={100}>100%</option>
+              </select>
+            ) : (
+              <input
+                id="level3SelectionValue"
+                type="number"
+                min={0}
+                value={selectionValue}
+                onChange={(event) => onSelectionValue(Number(event.target.value))}
+                className="mt-2 h-12 w-32 rounded-lg border border-slate-300 bg-white px-4 font-semibold text-slate-900 outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+              />
+            )}
+          </div>
+          <div className="rounded-lg bg-indigo-600 px-6 py-3 text-center font-bold text-white">
+            Select for Level 3 Offline
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+        <section className="rounded-lg border border-emerald-200 bg-white p-6 shadow-sm">
         <h2 className="text-2xl font-black text-slate-950">Selected for Level 3 Offline 🎉</h2>
-        <p className="mt-1 text-slate-600">These players will proceed to offline final round.</p>
+        <p className="mt-1 text-slate-600">
+          Total selected: <span className="font-black text-slate-950">{selectedPlayers.length}</span>. These players
+          will proceed to offline final round.
+        </p>
         <div className="mt-5 space-y-2">
           {selectedPlayers.map((player, index) => (
             <div className="flex items-center justify-between rounded-lg bg-emerald-50 px-4 py-3" key={player.id}>
@@ -374,6 +447,7 @@ function FinalWinners({
         </div>
         <LeaderboardTable players={players} scoreKey="level2" empty="No Level 2 scores yet." />
       </section>
+      </div>
     </div>
   );
 }
