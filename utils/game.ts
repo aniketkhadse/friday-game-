@@ -11,21 +11,21 @@ export const LEVEL_2_SECONDS_PER_QUESTION = 20;
 export const EMAIL_DOMAIN = "@aristasystems.in";
 
 export const LEVEL_2_QUESTIONS = [
-  { hint: "Subah uthne ka biggest enemy 😴", pattern: "_ L A _ M", answer: "ALARM" },
-  { hint: "Garmi me sabse bada savior 🧊", pattern: "_ O L D _ R I N _", answer: "COLDDRINK" },
-  { hint: "Office me bina iske kaam ruk jata hai 💻", pattern: "_ N T E _ N E T", answer: "INTERNET" },
-  { hint: "Kaam karne ka jagah 🏢", pattern: "_ F F I _ E", answer: "OFFICE" },
-  { hint: "Time dekhne ke liye ⏰", pattern: "_ L O _ K", answer: "CLOCK" },
-  { hint: "Khane ke baad sabko chahiye 🍰", pattern: "_ E S _ E R T", answer: "DESSERT" },
-  { hint: "Paise rakhne ka jagah 👛", pattern: "_ A L L _ T", answer: "WALLET" },
-  { hint: "Travel ka best partner ✈️", pattern: "_ U I _ C A S E", answer: "SUITCASE" },
-  { hint: "Jab kaam zyada ho jata hai 😵", pattern: "_ T R E _ S", answer: "STRESS" },
-  { hint: "TV ya phone me dekhte hai 🎬", pattern: "_ O V I _", answer: "MOVIE" },
-  { hint: "Road pe chalane ke liye 🚗", pattern: "_ E H I _ L E", answer: "VEHICLE" },
-  { hint: "Paise kamaane ka main reason 💼", pattern: "_ A R _ E R", answer: "CAREER" },
-  { hint: "Ghar me sabka favorite jagah 🛏️", pattern: "_ E D R _ O M", answer: "BEDROOM" },
-  { hint: "Mobile charge karne ke liye 🔌", pattern: "_ H A _ G E R", answer: "CHARGER" },
-  { hint: "Future ke liye planning 📊", pattern: "_ T R A _ E G Y", answer: "STRATEGY" }
+  { hint: "Din bhar aata rehta hai… par sab urgent nahi hota 😄", pattern: "_ M A _ L", answer: "EMAIL" },
+  { hint: "Boss ko dikhane ke liye banate ho… par khud bhi samajhna padta hai 😅", pattern: "_ E P O _ T", answer: "REPORT" },
+  { hint: "Hamesha paas aati hai… aur tension bhi saath laati hai 😬", pattern: "_ E A D _ I N E", answer: "DEADLINE" },
+  { hint: "Plan hota hai… par follow kab hota hai ye alag baat hai 😏", pattern: "_ C H E D U _ E", answer: "SCHEDULE" },
+  { hint: "Kaam sab milke karte hai… credit kabhi kabhi koi aur le jata hai 😄", pattern: "_ E A _", answer: "TEAM" },
+  { hint: "Dikhta nahi… par down ho gaya toh sab ruk jata hai 😅", pattern: "_ E R V _ R", answer: "SERVER" },
+  { hint: "Naam sunke thoda risky lagta hai… par matlab sirf unpredictable hota hai 😏", pattern: "_ _ N D O M", answer: "RANDOM" },
+  { hint: "Sunne me bold lagta hai… par actually traditional music se related hai 😄", pattern: "F _ _ K", answer: "FOLK" },
+  { hint: "Woh time jab sab apna best yaad dilate hai 😄💼", pattern: "_ P P R A I _ A L", answer: "APPRAISAL" },
+  { hint: "Meeting me hota hai… par kabhi clear nahi hota 😅", pattern: "_ G E N _ A", answer: "AGENDA" },
+  { hint: "Kaam karte waqt sabse bada distraction 📱", pattern: "_ O T I _ I C A T I O N", answer: "NOTIFICATION" },
+  { hint: "Jab system slow ho jata hai… sab isi ko blame karte hai Arista mai 😄", pattern: "_ A T I N", answer: "JATIN" },
+  { hint: "Office me sabse common excuse 😏", pattern: "_ R A F _ I C", answer: "TRAFFIC" },
+  { hint: "Kaam ka pressure ho toh ye hi kam pad jata hai 😴", pattern: "_ I M E", answer: "TIME" },
+  { hint: "Kaam ke beech me sabko chahiye hota hai ☕", pattern: "_ R E A _", answer: "BREAK" }
 ] as const;
 
 export type GameState =

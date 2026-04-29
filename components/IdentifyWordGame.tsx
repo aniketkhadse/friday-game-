@@ -37,10 +37,11 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
   const inputRef = useRef<HTMLInputElement | null>(null);
   void onProgress;
 
-  const question = LEVEL_2_QUESTIONS[questionIndex];
+  const questions = useMemo(() => shuffleArray(LEVEL_2_QUESTIONS), []);
+  const question = questions[questionIndex];
   const progress = useMemo(
-    () => Math.round((questionIndex / LEVEL_2_QUESTIONS.length) * 100),
-    [questionIndex],
+    () => Math.round((questionIndex / questions.length) * 100),
+    [questionIndex, questions.length],
   );
 
   const advance = useCallback(
@@ -50,10 +51,10 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
         const result = {
           level2Score: scoreRef.current,
           level2Correct: correctRef.current,
-          level2Progress: Math.round((nextIndex / LEVEL_2_QUESTIONS.length) * 100),
+          level2Progress: Math.round((nextIndex / questions.length) * 100),
         };
 
-        if (nextIndex >= LEVEL_2_QUESTIONS.length) {
+        if (nextIndex >= questions.length) {
           onFinish({ ...result, level2Progress: 100 });
           return;
         }
@@ -67,7 +68,7 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
         requestAnimationFrame(() => inputRef.current?.focus());
       }, delayMs);
     },
-    [onFinish, questionIndex],
+    [onFinish, questionIndex, questions.length],
   );
 
   const finishQuestion = useCallback(
@@ -136,7 +137,7 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Guess the Word 🧠</p>
           <h2 className="mt-1 text-2xl font-black text-slate-950">
-            Question {questionIndex + 1}/{LEVEL_2_QUESTIONS.length}
+            Question {questionIndex + 1}/{questions.length}
           </h2>
         </div>
         <div className="rounded-lg bg-slate-950 px-4 py-3 text-center text-white">
@@ -189,4 +190,11 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
       </div>
     </section>
   );
+}
+
+function shuffleArray<T>(array: readonly T[]): T[] {
+  return array
+    .map((value) => ({ value, sort: Math.random() }))
+    .sort((a, b) => a.sort - b.sort)
+    .map(({ value }) => value);
 }
