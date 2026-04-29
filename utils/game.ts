@@ -1,31 +1,91 @@
 export const GAME_TITLE = "Fun Games";
 export const GAME_SUBTITLE = "By Technology & Development Team";
-export const ROUND_SECONDS = 60;
+export const ROUND_SECONDS = 120;
 export const COUNTDOWN_SECONDS = 15;
 
 export const CHALLENGE_PARAGRAPH =
-  "In a data-driven digital environment, professionals must process and communicate information with speed and precision. Tasks like drafting reports, debugging code, or writing emails demand accuracy, where even a small mistake in punctuation or symbols (!, @, #, $, %) can change meaning. For example, expressions like (a+b)^2 or values such as 45% and 78.9% require careful typing. Maintaining consistency while switching between uppercase, lowercase, and special characters is essential. Those who type accurately under pressure gain a clear advantage in productivity and efficiency.";
+  "In every office, a strange rule exists: work increases exactly at 5:00 PM (not 4:59, not 5:01 😄). Suddenly, emails start popping like notifications@100%, meetings get scheduled (#urgent), and someone confidently says, “It will take just 2 minutes!” which actually means 25–30 mins. You open 3 tabs, switch between tasks, and still wonder how nothing is complete. Meanwhile, your brain is at 10% battery, but your manager expects 200% output. The keyboard becomes your battlefield—sometimes typing fast, sometimes producing errors like “asdf@123!!”. Coffee level = high, productivity = questionable. Deadlines chase you like a boss-level enemy, and your mind keeps calculating: “If I leave at 6:30, I can still reach by 7:45… maybe 😅.” In the end, surviving the day without pressing Ctrl+Alt+Delete on life itself feels like a real achievement!";
 
 export const DEFAULT_ADVANCEMENT_PERCENT = 30;
 export const LEVEL_2_SECONDS_PER_QUESTION = 20;
 export const EMAIL_DOMAIN = "@aristasystems.in";
 
 export const LEVEL_2_QUESTIONS = [
-  { hint: "Din bhar aata rehta hai… par sab urgent nahi hota 😄", pattern: "_ M A _ L", answer: "EMAIL" },
-  { hint: "Boss ko dikhane ke liye banate ho… par khud bhi samajhna padta hai 😅", pattern: "_ E P O _ T", answer: "REPORT" },
-  { hint: "Hamesha paas aati hai… aur tension bhi saath laati hai 😬", pattern: "_ E A D _ I N E", answer: "DEADLINE" },
-  { hint: "Plan hota hai… par follow kab hota hai ye alag baat hai 😏", pattern: "_ C H E D U _ E", answer: "SCHEDULE" },
-  { hint: "Kaam sab milke karte hai… credit kabhi kabhi koi aur le jata hai 😄", pattern: "_ E A _", answer: "TEAM" },
-  { hint: "Dikhta nahi… par down ho gaya toh sab ruk jata hai 😅", pattern: "_ E R V _ R", answer: "SERVER" },
-  { hint: "Naam sunke thoda risky lagta hai… par matlab sirf unpredictable hota hai 😏", pattern: "_ _ N D O M", answer: "RANDOM" },
-  { hint: "Sunne me bold lagta hai… par actually traditional music se related hai 😄", pattern: "F _ _ K", answer: "FOLK" },
-  { hint: "Woh time jab sab apna best yaad dilate hai 😄💼", pattern: "_ P P R A I _ A L", answer: "APPRAISAL" },
-  { hint: "Meeting me hota hai… par kabhi clear nahi hota 😅", pattern: "_ G E N _ A", answer: "AGENDA" },
-  { hint: "Kaam karte waqt sabse bada distraction 📱", pattern: "_ O T I _ I C A T I O N", answer: "NOTIFICATION" },
-  { hint: "Jab system slow ho jata hai… sab isi ko blame karte hai Arista mai 😄", pattern: "_ A T I N", answer: "JATIN" },
-  { hint: "Office me sabse common excuse 😏", pattern: "_ R A F _ I C", answer: "TRAFFIC" },
-  { hint: "Kaam ka pressure ho toh ye hi kam pad jata hai 😴", pattern: "_ I M E", answer: "TIME" },
-  { hint: "Kaam ke beech me sabko chahiye hota hai ☕", pattern: "_ R E A _", answer: "BREAK" }
+  {
+    hint: "Jab system slow ho jata hai… sab isi ko blame karte hai Arista mai 😄",
+    pattern: "_ A T _ N",
+    answer: "JATIN"
+  },
+  {
+    hint: "Naam sunke thoda risky lagta hai… par matlab sirf unpredictable hota hai 😏",
+    pattern: "_ _ N D O M",
+    answer: "RANDOM"
+  },
+  {
+    hint: "Sunne me bold lagta hai… par actually traditional music se related hai 😄",
+    pattern: "F _ _ K",
+    answer: "FOLK"
+  },
+  {
+    hint: "Meeting me sab bolte hai… par sunta kaun hai 😄",
+    pattern: "_ I S _ E N",
+    answer: "LISTEN"
+  },
+  {
+    hint: "Kaam start karne se pehle sab yahi karte hai 😏",
+    pattern: "_ L A _",
+    answer: "PLAN"
+  },
+  {
+    hint: "Jab system hang ho jaye toh sabse pehla step 🔄",
+    pattern: "_ E S T A _ T",
+    answer: "RESTART"
+  },
+  {
+    hint: "Office me bina iske kaam ruk jata hai 💻",
+    pattern: "_ O G I _",
+    answer: "LOGIN"
+  },
+  {
+    hint: "Har kisi ke paas hota hai… par sabka alag hota hai 😅",
+    pattern: "_ A S _ W O R D",
+    answer: "PASSWORD"
+  },
+  {
+    hint: "Jab kaam boring ho jaye… tab ye hi karte ho 😄",
+    pattern: "_ C R O _ L",
+    answer: "SCROLL"
+  },
+  {
+    hint: "Meeting ke baad sab bolte hai ‘ye toh hona hi tha’ 😏",
+    pattern: "_ E S U _ T",
+    answer: "RESULT"
+  },
+  {
+    hint: "Office me sabko chahiye… par milta kam hai 😴",
+    pattern: "_ E S _",
+    answer: "REST"
+  },
+  {
+    hint: "Kaam ke beech me sabka favourite distraction 😂",
+    pattern: "_ H A T",
+    answer: "CHAT"
+  },
+  {
+    hint: "Jab kaam zyada ho jaye toh ye hi bolte hai 😅",
+    pattern: "_ E L P",
+    answer: "HELP"
+  },
+  {
+    hint: "Office me sabse zyada use hota hai… par naam alag alag hota hai 📂",
+    pattern: "_ I L E",
+    answer: "FILE"
+  },
+  {
+    hint: "Kaam complete hone ke baad ye feeling aati hai 😌",
+    pattern: "_ E L I E _",
+    answer: "RELIEF"
+  }
 ] as const;
 
 export type GameState =
