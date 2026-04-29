@@ -69,7 +69,7 @@ export function PlayerApp() {
 
     if (snapshot.gameState === "LEVEL2_RUNNING") {
       if (livePlayer.qualified && livePlayer.status !== "Finished") {
-        if (!level2Ready && step !== "level2Instructions") {
+        if (step !== "level2Instructions" && step !== "level2Countdown" && step !== "level2") {
           setStep("level2Instructions");
         }
         return;

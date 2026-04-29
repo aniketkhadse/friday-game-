@@ -132,6 +132,8 @@ export function AdminPanel() {
             selectedPlayers={selectedForLevel3}
             selectionMode={level3SelectionMode}
             selectionValue={level3SelectionValue}
+            isActing={isActing}
+            isAnnounced={snapshot?.level3Selected ?? false}
             onSelectionMode={setLevel3SelectionMode}
             onSelectionValue={setLevel3SelectionValue}
             onSaveSelection={() => void runAction(() => saveLevel3Selection({ mode: level3SelectionMode, value: level3SelectionValue }))}
@@ -369,6 +371,8 @@ function FinalWinners({
   selectedPlayers,
   selectionMode,
   selectionValue,
+  isActing,
+  isAnnounced,
   onSelectionMode,
   onSelectionValue,
   onSaveSelection,
@@ -377,6 +381,8 @@ function FinalWinners({
   selectedPlayers: Player[];
   selectionMode: AdvancementMode;
   selectionValue: number;
+  isActing: boolean;
+  isAnnounced: boolean;
   onSelectionMode: (mode: AdvancementMode) => void;
   onSelectionValue: (value: number) => void;
   onSaveSelection: () => void;
@@ -427,9 +433,12 @@ function FinalWinners({
           </div>
           <button
             onClick={onSaveSelection}
-            className="rounded-lg bg-indigo-600 px-6 py-3 text-center font-bold text-white transition hover:bg-indigo-700"
+            disabled={isActing}
+            className={`rounded-lg px-6 py-3 text-center font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${
+              isAnnounced ? "bg-emerald-600 hover:bg-emerald-700" : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
           >
-            Select for Level 3 Offline
+            {isActing ? "Saving..." : isAnnounced ? "Selection Announced ✅" : "Announce Final Winners"}
           </button>
         </div>
       </section>
