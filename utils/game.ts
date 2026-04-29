@@ -66,6 +66,7 @@ export type GameSnapshot = {
   roundEndsAt: number | null;
   advancementPercent: number;
   selectedCount: number | null;
+  level3Selected: boolean;
   serverNow: number;
   players: Player[];
 };

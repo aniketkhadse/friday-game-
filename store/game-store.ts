@@ -15,6 +15,7 @@ type InternalGame = {
   roundEndsAt: number | null;
   advancementPercent: number;
   selectedCount: number | null;
+  level3Selected: boolean;
   players: Map<string, Player>;
 };
 
@@ -29,6 +30,7 @@ function createGame(): InternalGame {
     roundEndsAt: null,
     advancementPercent: DEFAULT_ADVANCEMENT_PERCENT,
     selectedCount: null,
+    level3Selected: false,
     players: new Map(),
   };
 }
@@ -72,6 +74,7 @@ export function getSnapshot(): GameSnapshot {
     roundEndsAt: game.roundEndsAt,
     advancementPercent: game.advancementPercent,
     selectedCount: game.selectedCount,
+    level3Selected: game.level3Selected,
     serverNow,
     players: [...game.players.values()].sort((a, b) => a.joinedAt - b.joinedAt),
   };
@@ -199,6 +202,7 @@ export function adminAction(
 
   if (action === "endLevel2") {
     game.gameState = "ENDED";
+    game.level3Selected = false;
     for (const player of game.players.values()) {
       if (player.level2Eligible && player.status === "Playing") {
         player.status = "Finished";
@@ -213,6 +217,7 @@ export function adminAction(
     game.roundEndsAt = null;
     game.advancementPercent = DEFAULT_ADVANCEMENT_PERCENT;
     game.selectedCount = null;
+    game.level3Selected = false;
     game.players.clear();
   }
 

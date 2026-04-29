@@ -14,7 +14,9 @@ import {
   getTopLevel2PlayersByCount,
   normalizeEmailInput,
   sortLevel2Leaderboard,
+  sortLeaderboard,
   TypingMetrics,
+  Player,
 } from "@/utils/game";
 
 type PlayerStep =
@@ -249,7 +251,7 @@ export function PlayerApp() {
     return index >= 0 ? index + 1 : null;
   }, [player?.id, snapshot]);
   const selectedForOfflineFinal = useMemo(() => {
-    if (!player?.id || !snapshot || snapshot.gameState !== "ENDED") return false;
+    if (!player?.id || !snapshot || snapshot.gameState !== "ENDED" || !snapshot.level3Selected) return false;
     const selected =
       snapshot.selectedCount !== null
         ? getTopLevel2PlayersByCount(snapshot.players, snapshot.selectedCount)
@@ -411,6 +413,20 @@ export function PlayerApp() {
                 Join as New Player
               </button>
             ) : null}
+
+            {hasLevel1Selection ? (
+              <div className="mt-12 w-full max-w-4xl bg-white text-left shadow-sm rounded-lg border border-slate-200 overflow-hidden">
+                <div className="bg-slate-50 px-5 py-4 border-b border-slate-200">
+                  <h3 className="text-xl font-black text-slate-950">Level 1 Leaderboard</h3>
+                </div>
+                <PublicLeaderboardTable 
+                  players={snapshot?.players ?? []} 
+                  scoreKey="level1" 
+                  currentPlayerId={player?.id} 
+                  selectedIds={new Set(selectedPlayers.map(p => p.id))}
+                />
+              </div>
+            ) : null}
           </FullResult>
         ) : null}
 
@@ -458,20 +474,43 @@ export function PlayerApp() {
               <Result label="Rank" value={finalRank ? `#${finalRank}` : "-"} />
               <Result label="Level 2 Score" value={`${player?.level2Score ?? 0}`} />
             </div>
-            {selectedForOfflineFinal ? (
+            {!snapshot?.level3Selected ? (
+              <p className="mt-8 text-2xl font-bold text-slate-500 animate-pulse">Wait for admin to announce results...</p>
+            ) : selectedForOfflineFinal ? (
               <p className="mt-8 text-4xl font-black text-emerald-700">
                 🎉 YOU ARE SELECTED FOR LEVEL 3 OFFLINE 🎉
               </p>
-            ) : snapshot?.gameState === "ENDED" ? (
+            ) : (
               <p className="mt-8 text-3xl font-black text-rose-700">You are not selected for Level 3 offline</p>
-            ) : null}
-            {snapshot?.gameState === "ENDED" && !selectedForOfflineFinal ? (
+            )}
+            {snapshot?.gameState === "ENDED" && snapshot?.level3Selected && !selectedForOfflineFinal ? (
               <button
                 onClick={handleJoinAgain}
                 className="mt-6 h-11 rounded-lg border border-slate-300 bg-white px-5 font-bold text-slate-900 transition hover:bg-slate-50"
               >
                 Join as New Player
               </button>
+            ) : null}
+
+            {snapshot?.level3Selected ? (
+              <div className="mt-12 w-full max-w-4xl bg-white text-left shadow-sm rounded-lg border border-slate-200 overflow-hidden">
+                <div className="bg-slate-50 px-5 py-4 border-b border-slate-200">
+                  <h3 className="text-xl font-black text-slate-950">Guess the Word Leaderboard</h3>
+                </div>
+                <PublicLeaderboardTable 
+                  players={snapshot.players} 
+                  scoreKey="level2" 
+                  currentPlayerId={player?.id} 
+                  selectedIds={
+                    new Set(
+                      (snapshot.selectedCount !== null
+                        ? getTopLevel2PlayersByCount(snapshot.players, snapshot.selectedCount)
+                        : getTopLevel2Players(snapshot.players, snapshot.advancementPercent)
+                      ).map(p => p.id)
+                    )
+                  }
+                />
+              </div>
             ) : null}
           </FullResult>
         ) : null}
@@ -528,6 +567,59 @@ function Result({ label, value }: { label: string; value: string }) {
     <div className="rounded-lg bg-slate-50 p-5">
       <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</div>
       <div className="mt-2 text-3xl font-black text-slate-950">{value}</div>
+    </div>
+  );
+}
+
+function PublicLeaderboardTable({
+  players,
+  scoreKey,
+  currentPlayerId,
+  selectedIds,
+}: {
+  players: Player[];
+  scoreKey: "level1" | "level2";
+  currentPlayerId?: string;
+  selectedIds: Set<string>;
+}) {
+  const ranked = scoreKey === "level1" ? sortLeaderboard(players) : sortLevel2Leaderboard(players);
+
+  return (
+    <div className="overflow-x-auto max-h-[400px] overflow-y-auto w-full">
+      <table className="w-full min-w-[520px] text-left text-sm">
+        <thead className="sticky top-0 bg-slate-50 text-xs uppercase tracking-wide text-slate-500 shadow-sm z-10">
+          <tr>
+            <th className="px-5 py-3">Rank</th>
+            <th className="px-5 py-3">Name</th>
+            <th className="px-5 py-3">Score</th>
+            <th className="px-5 py-3 text-right">Status</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {ranked.map((p, index) => {
+            const isMe = p.id === currentPlayerId;
+            const isSelected = selectedIds.has(p.id);
+            return (
+              <tr key={p.id} className={isMe ? "bg-indigo-50" : ""}>
+                <td className="px-5 py-3 font-bold text-slate-900">
+                  #{index + 1} {isMe && <span className="ml-2 rounded bg-indigo-600 px-2 py-0.5 text-[10px] text-white">YOU</span>}
+                </td>
+                <td className="px-5 py-3 font-semibold text-slate-800">{p.name}</td>
+                <td className="px-5 py-3 font-black text-slate-950">
+                  {(scoreKey === "level1" ? p.level1Score || p.score : p.level2Score).toFixed(0)}
+                </td>
+                <td className="px-5 py-3 text-right font-bold">
+                  {isSelected ? (
+                    <span className="text-emerald-600">Selected 🎉</span>
+                  ) : (
+                    <span className="text-slate-400">-</span>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

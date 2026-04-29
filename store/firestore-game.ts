@@ -38,6 +38,7 @@ type GameDoc = {
   roundEndsAt?: number | null;
   advancementPercent?: number;
   selectedCount?: number | null;
+  level3Selected?: boolean;
   updatedAt?: number;
 };
 
@@ -51,6 +52,7 @@ const defaultGameDoc: Required<Omit<GameDoc, "updatedAt">> = {
   roundEndsAt: null,
   advancementPercent: DEFAULT_ADVANCEMENT_PERCENT,
   selectedCount: null,
+  level3Selected: false,
 };
 
 export function getLocalPlayerId() {
@@ -89,6 +91,7 @@ export function subscribeGameSnapshot(callback: (snapshot: GameSnapshot) => void
       roundEndsAt: gameDoc.roundEndsAt,
       advancementPercent: gameDoc.advancementPercent,
       selectedCount: gameDoc.selectedCount,
+      level3Selected: gameDoc.level3Selected,
       serverNow: Date.now(),
       players,
     });
@@ -113,6 +116,7 @@ export function subscribeGameSnapshot(callback: (snapshot: GameSnapshot) => void
         roundEndsAt: data.roundEndsAt ?? null,
         advancementPercent: data.advancementPercent ?? DEFAULT_ADVANCEMENT_PERCENT,
         selectedCount: data.selectedCount ?? null,
+        level3Selected: data.level3Selected ?? false,
       };
       gameLoaded = true;
       emit();
@@ -312,6 +316,7 @@ export async function saveLevel3Selection(input: { mode: AdvancementMode; value:
   batch.set(
     doc(db!, "games", GAME_DOC),
     {
+      level3Selected: true,
       advancementPercent: input.mode === "percent" ? normalizePercent(input.value) : DEFAULT_ADVANCEMENT_PERCENT,
       selectedCount: input.mode === "count" ? Math.max(0, Math.floor(input.value)) : null,
       updatedAt: Date.now(),
@@ -348,7 +353,7 @@ export async function endLevel2() {
   assertDb();
   const now = Date.now();
   const batch = writeBatch(db!);
-  batch.set(doc(db!, "games", GAME_DOC), { gameState: "ENDED", updatedAt: now }, { merge: true });
+  batch.set(doc(db!, "games", GAME_DOC), { gameState: "ENDED", level3Selected: false, updatedAt: now }, { merge: true });
 
   const players = await getDocs(collection(db!, "players"));
   players.forEach((playerDoc) => {
