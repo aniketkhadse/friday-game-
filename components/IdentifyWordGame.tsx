@@ -184,6 +184,10 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
         autoComplete="off"
         autoCapitalize="characters"
         spellCheck={false}
+        autoCorrect="off"
+        data-gramm="false"
+        data-gramm_editor="false"
+        data-enable-grammarly="false"
       />
 
       <div className="mt-5 min-h-8 text-center">
