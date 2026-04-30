@@ -4,7 +4,7 @@ export const ROUND_SECONDS = 120;
 export const COUNTDOWN_SECONDS = 15;
 
 export const CHALLENGE_PARAGRAPH =
-  "During appraisal season, a magical transformation happens in every office: suddenly, every employee becomes 200% productive (yes, even the one who was “busy” watching reels at 2:00 PM). Tasks are completed at lightning speed, emails are replied within 0.5 seconds, and meetings start exactly on time (shocking, right?). Everyone starts updating documents, tracking progress in Excel sheets, and using words like “impact”, “ownership”, and “delivery@100%”. Even the quietest person begins sharing ideas like a keynote speaker! Coffee consumption rises to 3–4 cups/day, sleep drops to <5 hours, and keyboard sounds go “click-click-CTRL+C-CTRL+V!!”. Meanwhile, the brain calculates: “If I do +2 extra tasks daily, maybe rating = A+?” Deadlines are no longer scary—they are opportunities! In the end, after all the effort, everyone refreshes the system (and HR portal) like it’s a live IPL score, hoping their hard work finally converts into that perfect appraisal.";
+  "On 01/05/2026 at exactly 3:00 p.m., the entire office went silent as the long-awaited Appraisal_Sheet_vFinal(3).xlsx finally arrived. Everyone refreshed Outlook every 10-15 seconds, pretending to work at 99.99% efficiency. Chandu opened the sheet with trembling hands, calculating: \"If rating = A+, hike >= 30%?\" Suddenly, someone whispered, \"Check row #27!!\" while another typed Ctrl+C Ctrl+V like a pro. Within 0.5 seconds, reactions exploded - smiles, shock, and one quiet \":')\". Meanwhile, the server lagged, coffee spilled, and reality loaded slower than expectations.";
 
 export const DEFAULT_ADVANCEMENT_PERCENT = 30;
 export const LEVEL_2_SECONDS_PER_QUESTION = 20;
@@ -12,9 +12,44 @@ export const EMAIL_DOMAIN = "@aristasystems.in";
 
 export const LEVEL_2_QUESTIONS = [
   {
-    hint: "Jab system slow ho jata hai… sab isi ko blame karte hai Arista mai 😄",
-    pattern: "_ A T _ N",
-    answer: "JATIN"
+    hint: "Monday se hi sab isi ka wait karne lagte hain 🥳",
+    pattern: "W _ _ _ E _ D",
+    answer: "WEEKEND"
+  },
+  {
+    hint: "Sabke desktop par hota hai... par time par kuch milta nahi hai 📂",
+    pattern: "F _ _ D _ R",
+    answer: "FOLDER"
+  },
+  {
+    hint: "Month end mein sabse pehle isi ka message wait karte hain 💸",
+    pattern: "S _ _ A _ Y",
+    answer: "SALARY"
+  },
+  {
+    hint: "Kaam start karne se pehle sab yahi open karte hai 💻",
+    pattern: "_ R O W _ E R",
+    answer: "BROWSER"
+  },
+  {
+    hint: "Kaam ke beech me sabka favourite escape 😄",
+    pattern: "_ E E _",
+    answer: "REEL"
+  },
+  {
+    hint: "Sab ke paas hota hai… par share karne ka mann nahi karta 😏",
+    pattern: "_ A S S _ O R D",
+    answer: "PASSWORD"
+  },
+  {
+    hint: "Office me sabko chahiye… par milta kam hai 😴",
+    pattern: "_ E S _",
+    answer: "REST"
+  },
+  {
+    hint: "2-minute noodles iske bina adhure hain! 🍜",
+    pattern: "_ O R K",
+    answer: "FORK"
   },
   {
     hint: "Naam sunke thoda risky lagta hai… par matlab sirf unpredictable hota hai 😏",
@@ -22,14 +57,14 @@ export const LEVEL_2_QUESTIONS = [
     answer: "RANDOM"
   },
   {
-    hint: "Sunne me bold lagta hai… par actually traditional music se related hai 😄",
-    pattern: "F _ _ K",
-    answer: "FOLK"
+    hint: "Jab system slow ho jata hai… sab isi ko blame karte hai Arista mai 😄",
+    pattern: "_ A T _ N",
+    answer: "JATIN"
   },
   {
-    hint: "Meeting me sab bolte hai… par sunta kaun hai 😄",
-    pattern: "_ I S _ E N",
-    answer: "LISTEN"
+    hint: "Jab kaam zyada ho jaye toh ye hi chahiye hota hai 😴",
+    pattern: "_ L E E _",
+    answer: "SLEEP"
   },
   {
     hint: "Kaam start karne se pehle sab yahi karte hai 😏",
@@ -47,44 +82,9 @@ export const LEVEL_2_QUESTIONS = [
     answer: "LOGIN"
   },
   {
-    hint: "Har kisi ke paas hota hai… par sabka alag hota hai 😅",
-    pattern: "_ A S _ W O R D",
-    answer: "PASSWORD"
-  },
-  {
-    hint: "Jab kaam boring ho jaye… tab ye hi karte ho 😄",
-    pattern: "_ C R O _ L",
-    answer: "SCROLL"
-  },
-  {
-    hint: "Meeting ke baad sab bolte hai ‘ye toh hona hi tha’ 😏",
-    pattern: "_ E S U _ T",
-    answer: "RESULT"
-  },
-  {
-    hint: "Office me sabko chahiye… par milta kam hai 😴",
-    pattern: "_ E S _",
-    answer: "REST"
-  },
-  {
-    hint: "Kaam ke beech me sabka favourite distraction 😂",
-    pattern: "_ H A T",
-    answer: "CHAT"
-  },
-  {
-    hint: "Jab kaam zyada ho jaye toh ye hi bolte hai 😅",
-    pattern: "_ E L P",
-    answer: "HELP"
-  },
-  {
-    hint: "Office me sabse zyada use hota hai… par naam alag alag hota hai 📂",
-    pattern: "_ I L E",
-    answer: "FILE"
-  },
-  {
-    hint: "Kaam complete hone ke baad ye feeling aati hai 😌",
-    pattern: "_ E L I E _",
-    answer: "RELIEF"
+    hint: "Late hone ka sabse common excuse 😏",
+    pattern: "_ R A F _ I C",
+    answer: "TRAFFIC"
   }
 ] as const;
 
