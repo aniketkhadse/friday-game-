@@ -90,6 +90,13 @@ export function IdentifyWordGame({ onProgress, onFinish }: IdentifyWordGameProps
 
   useEffect(() => {
     inputRef.current?.focus();
+    const handleFocus = () => inputRef.current?.focus();
+    document.addEventListener("click", handleFocus);
+    document.addEventListener("keydown", handleFocus);
+    return () => {
+      document.removeEventListener("click", handleFocus);
+      document.removeEventListener("keydown", handleFocus);
+    };
   }, []);
 
   useEffect(() => {

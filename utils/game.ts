@@ -48,7 +48,7 @@ export const LEVEL_2_QUESTIONS = [
   },
   {
     hint: "2-minute noodles iske bina adhure hain! 🍜",
-    pattern: "_ O R K",
+    pattern: "F _ _ K",
     answer: "FORK"
   },
   {

@@ -41,6 +41,13 @@ export function TypingRace({ roundEndsAt, onFinish, onProgress }: TypingRaceProp
 
   useEffect(() => {
     textareaRef.current?.focus();
+    const handleFocus = () => textareaRef.current?.focus();
+    document.addEventListener("click", handleFocus);
+    document.addEventListener("keydown", handleFocus);
+    return () => {
+      document.removeEventListener("click", handleFocus);
+      document.removeEventListener("keydown", handleFocus);
+    };
   }, []);
 
   useEffect(() => {
@@ -121,7 +128,7 @@ const Paragraph = memo(function Paragraph({ typed }: { typed: string }) {
         if (input != null) {
           className = input === char ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-700";
         } else if (index === typed.length) {
-          className = "border-b-2 border-slate-900 text-slate-900";
+          className = "bg-slate-200 text-slate-900 rounded";
         }
 
         return (
