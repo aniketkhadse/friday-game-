@@ -33,6 +33,8 @@ export function AdminPanel() {
   const [level3SelectionMode, setLevel3SelectionMode] = useState<AdvancementMode>("count");
   const [level3SelectionValue, setLevel3SelectionValue] = useState(2);
   const [isActing, setIsActing] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
   const players = snapshot?.players ?? [];
   const gameState = snapshot?.gameState ?? "WAITING";
 
@@ -70,6 +72,11 @@ export function AdminPanel() {
     await startLevel2();
   }
 
+  async function handleStartLevel2Directly() {
+    await selectLevel2Players({ mode: "percent", value: 100 });
+    await startLevel2();
+  }
+
   async function handleEndLevel1() {
     await endLevel1();
     await selectLevel2Players({ mode: selectionMode, value: selectionValue });
@@ -87,6 +94,39 @@ export function AdminPanel() {
     if (gameState === "LEVEL1_DONE") {
       void runAction(() => selectLevel2Players({ mode: selectionMode, value }));
     }
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+        <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm text-center">
+          <h1 className="mb-6 text-2xl font-black text-slate-900">Admin Access Restricted</h1>
+          <p className="mb-6 text-sm font-semibold text-slate-500">Please enter the admin passcode to manage the game.</p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const validPasscode = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin@123";
+              if (password === validPasscode) setIsAuthenticated(true);
+              else alert("Incorrect passcode");
+            }}
+          >
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter passcode"
+              className="mb-4 w-full rounded-lg border border-slate-300 p-3 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200 text-center font-bold tracking-widest text-lg"
+            />
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-indigo-600 p-3 font-bold text-white transition hover:bg-indigo-700"
+            >
+              Unlock Dashboard
+            </button>
+          </form>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -113,6 +153,7 @@ export function AdminPanel() {
               onStartLevel1={() => void runAction(startLevel1)}
               onEndLevel1={() => void runAction(handleEndLevel1)}
               onStartLevel2={() => void runAction(handleStartLevel2)}
+              onStartLevel2Directly={() => void runAction(handleStartLevel2Directly)}
               onEndLevel2={() => void runAction(endLevel2)}
               onReset={() => void runAction(resetGame)}
             />
@@ -165,6 +206,7 @@ function StateAction({
   onStartLevel1,
   onEndLevel1,
   onStartLevel2,
+  onStartLevel2Directly,
   onEndLevel2,
   onReset,
 }: {
@@ -177,11 +219,17 @@ function StateAction({
   onStartLevel1: () => void;
   onEndLevel1: () => void;
   onStartLevel2: () => void;
+  onStartLevel2Directly: () => void;
   onEndLevel2: () => void;
   onReset: () => void;
 }) {
   if (gameState === "WAITING") {
-    return <MainButton label="Start Level 1" disabled={isActing} onClick={onStartLevel1} tone="green" />;
+    return (
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <MainButton label="Start Level 1" disabled={isActing} onClick={onStartLevel1} tone="green" />
+        <MainButton label="Start Level 2 Directly" disabled={isActing} onClick={onStartLevel2Directly} tone="indigo" />
+      </div>
+    );
   }
 
   if (gameState === "LEVEL1_RUNNING") {
