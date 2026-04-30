@@ -105,7 +105,7 @@ export function AdminPanel() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              const validPasscode = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin@123";
+              const validPasscode = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "Sendmemes@17";
               if (password === validPasscode) setIsAuthenticated(true);
               else alert("Incorrect passcode");
             }}
